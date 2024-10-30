@@ -1,6 +1,6 @@
 ## code is running some basic visualizations of MBRP data collected since Mar 2024
 ## the input is based on connection to movebank 
-# install packages
+## install packages
 {
   #library(moveVis)
   library(move2)
@@ -17,24 +17,49 @@
   library(htmlwidgets)
   library(RColorBrewer)
   library(units)
+  library(magrittr)
+  library(purrr) 
+  library(plotly)
+  library(gridExtra)
+  library(png)
+  library(grid)    
+  library(DT)
+  library(htmlwidgets)
+  
+  
+  
 }
-# parameters - fill in details 
-{  
+## parameters - fill in details 
+{
 #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
 #ggmap::register_google(key = "KEY")
-  time_interval <- "10 mins"
-  date_start <- as.POSIXct("2024-03-01 00:00:00")
+time_interval <- "1 secs"
+date_start <- as.POSIXct("2024-09-01 00:00:00")
+speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
+mark_old_downloads <- 21 # 21 days
 }
-## load data
+## functions
 {
+# load data and basic cleaning
+get_data <- function(date_start, time_interval, speed_threshold) {
   baboon_data_2024 <- movebank_download_study(3445611111, sensor_type_id = c("gps"), 
                                               timestamp_start = date_start,
                                              # individual_id = c(3487912671, 3487912662, 3487912663, 3487844492, 3508338112, 3938663627),
-                                              remove_movebank_outliers = TRUE)
+                                              remove_movebank_outliers = TRUE) %>%
+    filter(!st_is_empty(.))     # remove empty rows
+  
+  # calc speed azimuth and clean speed outliers
+  baboon_data_2024 %<>% mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
+  baboon_data_2024$speed <- set_units(baboon_data_2024$speed, "m/s")
+  baboon_data_2024 <- baboon_data_2024 %>%
+    filter(speed <= speed_threshold | is.na(speed))
+  
+  # add fields from metadata
   metadata_2024 <- mt_track_data(baboon_data_2024)
   
   baboon_data_2024 <- baboon_data_2024 %>%
-    left_join(metadata_2024 %>% select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
+    left_join(metadata_2024 %>% 
+                select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
     mt_filter_per_interval(unit = time_interval)
   
   baboon_data_2024$location.long <- sf::st_coordinates(baboon_data_2024)[,1]
@@ -42,414 +67,178 @@
   baboon_data_2024$group_id <- baboon_data_2024$group_id
   
 
-   # Step 1: Identify matching columns
-matching_columns <- Reduce(intersect, list(names(baboon_data_2024)))
+  # Identify matching columns
+  matching_columns <- Reduce(intersect, list(names(baboon_data_2024)))
   
 
-# Step 2: Join tibbles while keeping only matching columns
-combined_data <- bind_rows(
-  select(as.data.frame(baboon_data_2024), matching_columns)
-)
+  # Join tibbles while keeping only matching columns
+  combined_data <- bind_rows(
+    select(as.data.frame(baboon_data_2024), matching_columns)
+  )
 
+  combined_data <- combined_data %>%
+    mutate(plot_name = paste(group_id, year(timestamp), sep = "_")) %>%
+    filter(plot_name != "Campsite_2020") %>%
+    filter(tag_local_identifier != 6915)
 
-combined_data <- combined_data %>%
-  mutate(plot_name = paste(group_id, year(timestamp), sep = "_")) %>%
-  filter(plot_name != "Campsite_2020") %>%
-  filter(tag_local_identifier != 6915)
-
-matching_columns <- Reduce(intersect, list(names(mt_track_data(baboon_data_2024))))
-
-# Step 2: Join tibbles while keeping only matching columns
-combined_metatdata <- bind_rows(
-  select(mt_track_data(baboon_data_2024), matching_columns)
-)
+# Return the clustered data
+return(combined_data)
 
 # combined_data <- combined_data %>%
 #   filter(group_id %in% c("Mlimafisi", "Clifford", "Leikiji"))
 
-#baboon_data <- movebank_download_study(3445611111, sensor_type_id = c("gps"))
-#metadata <- mt_track_data(baboon_data_2019)
-
 }
+# Function to round to the nearest specified value
+round_to_nearest <- function(x, values) {
+  values[which.min(abs(values - x))]
+}
+
+# Functions for coloring text in tables
+mark_status_change <- function(status, battery, tag) {
+  style <- ""
+  
+  # Check for 'rest' status and battery
+  if (status == "Rest" && battery > set_units(3950, "mV")) {
+    style <- paste(style, "color: red; font-weight: bold;")  # Add red text color
+  }
+  
+  # Check for 'monitor' status and battery
+  if ((status == "Monitor" || status == "High") && battery < set_units(3700, "mV")) {
+    style <- paste(style, "color: blue; font-weight: bold;")  # Add blue text color
+  }
+  
+  # Return HTML string with the style
+  return(paste("<span style='", style, "'>", tag, "</span>", sep = ""))
+}
+mark_old_downloads <- function(last_date) {
+  style <- ""
+  
+  # Check for date older than 21 days
+  if (last_date < Sys.Date() - mark_old_downloads) {
+    style <- paste(style, "color: orange; font-weight: bold;")  # Add blue text color
+  }
+  # Return HTML string with the style
+  return(paste("<span style='", style, "'>", last_date, "</span>", sep = ""))
+}
+}
+## load data and basic cleaning
+combined_data <- get_data(date_start, time_interval, speed_threshold)
 ## plot data dist
 {
+recent_data <- combined_data[combined_data$timestamp > date_start,]
+recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
 
-  recent_data <- combined_data[combined_data$timestamp > date_start,]
-  recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
-  
-  ordered_levels <- recent_data %>%
-    arrange(group_id) %>%
-    pull(tag_local_identifier) %>%
-    unique()
-  
-  recent_data$tag_local_identifier <- factor(recent_data$tag_local_identifier, levels = ordered_levels)
-  
-  records <- ggplot(recent_data, 
-       aes(x = timestamp, 
-           y = tag_local_identifier,
-           color = group_id)) +
-       geom_point() +
-       labs(x = "timestamp", y = "tagID") 
-  
-  ggsave(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.png'), plot = records, width = 10, height = 8, dpi = 300)
-  
+ordered_levels <- recent_data %>%
+   arrange(group_id) %>%
+   pull(tag_local_identifier) %>%
+   unique()
 
+recent_data$tag_local_identifier <- factor(recent_data$tag_local_identifier, levels = ordered_levels)
+
+records <- ggplot(recent_data, 
+                  aes(x = timestamp, 
+                      y = eobs_battery_voltage,
+                      color = tag_local_identifier)) +
+  geom_point() +
+  labs(x = "timestamp", y = "tagID") 
+interactive_plot <- ggplotly(records, tooltip = "text")
+# save plots
+saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_batt_plot.html'), selfcontained = TRUE)
 }
-## batt trend
+## Calculate median time difference, add group_id, and round it
 {
-
-  recent_data <- combined_data[combined_data$timestamp > date_start,]
-  recent_data <- recent_data[as.numeric(recent_data$eobs_battery_voltage) < 3800,]
- 
-  recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
+  daily_summary <- recent_data %>%
+    mutate(date = as.Date(timestamp),            # Extract date
+           time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
+    group_by(tag_local_identifier, group_id, date) %>%
+    summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
+              min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   # Calculate median battery level
+              .groups = "drop") %>%
+    mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(1, 120, 7200))) %>%
+    mutate(rounded_time_diff = recode(rounded_time_diff, 
+                                      "1" = "High",
+                                      "120" = "Monitor",
+                                      "7200" = "Rest")) 
   
-  ordered_levels <- recent_data %>%
-    arrange(group_id) %>%
-    pull(tag_local_identifier) %>%
-    unique()
+  # Find the most recent `rounded_time_diff` for each tag
+  most_recent_rounded_time_diff <- daily_summary %>%
+    group_by(tag_local_identifier) %>%
+    filter(date == max(date)) %>%
+    select(tag_local_identifier, 
+           last_rounded_time_diff = rounded_time_diff,  # Get the most recent rounded time diff
+           last_batt_value = min_battery)               # Get the most recent battery value
   
-  recent_data$tag_local_identifier <- factor(recent_data$tag_local_identifier, levels = ordered_levels)
+ # daily_summary <- st_as_sf(daily_summary)  
+ #most_recent_rounded_time_diff <- st_drop_geometry(most_recent_rounded_time_diff)
   
-  records <- ggplot(recent_data, 
-       aes(x = timestamp, 
-           y = eobs_battery_voltage,
-           color = tag_local_identifier)) +
-       geom_point() +
-       labs(x = "timestamp", y = "tagID") 
+  # Join this information back into the original `daily_summary` to keep all rows
+  daily_summary <- daily_summary %>%
+    left_join(most_recent_rounded_time_diff, by = "tag_local_identifier") 
   
-  ggsave(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_batt_records.png'), plot = records, width = 10, height = 8, dpi = 300)
+  daily_summary <- daily_summary %>%
+    mutate(y_axis_label = interaction(group_id, tag_local_identifier, last_rounded_time_diff, last_batt_value, sep = " - ")) %>%
+    mutate(y_axis_label = factor(y_axis_label, 
+                                 levels = unique(y_axis_label[order(group_id, tag_local_identifier)]))) 
   
-
-}
-## plot map interactive
-{
-# Generate a list of unique identifiers
-  #unique_ids <- unique(combined_data$individual_local_identifier)
-  #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
-
- # combined_data <- combined_data %>%
- #    filter(group_id %in% c("Mlimafisi", "Leikiji"))
-  # names for legend
-  names_plot <- unique(sort(combined_data$plot_name))
-  # Create a color palette
-  pallete <- colorFactor("Set1", domain = names_plot)
-  
-  
-  # Loop through each unique identifier to create a layer for each
-  # Create the basic Leaflet map
-  m <- leaflet() %>%
-    addTiles(group = "OSM") %>%
-    addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
-    addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
-  
-  
-  
-  for(id in names_plot) {
-    data_subset <- subset(combined_data, plot_name == id) 
     
-    m <- m %>%
-      addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                       color = ~pallete(id), 
-                       opacity = .4, fillOpacity = .4,
-                       radius = .5, 
-                       group = as.character(id))
-  }
+    # Create the plot
+  daily_plot <- ggplot(daily_summary, 
+         aes(x = date, 
+             y = y_axis_label,
+             color = as.numeric(min_battery))) +
+    geom_point(size = 3) +
+    labs(x = "Date", y = "Tag ID") +
+    theme(axis.text.y = element_text(angle = 0, hjust = 1)) +  # Adjust text if needed
+    scale_y_discrete(drop = FALSE) +  # Keep all levels even if some are missing 
+    scale_color_gradientn(colors = heat.colors(20), 
+                          limits = c(3590, 4000))  
+  interactive_plot <- ggplotly(daily_plot, tooltip = "text")
   
-  
-  m <- m %>% onRender("
-function(el, x) {
-  var map = this;
-  map.on('click', function(e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lon = e.latlng.lng.toFixed(5);
-    var popup = L.popup()
-      .setLatLng(e.latlng)
-      .setContent(lat + ', ' + lon)
-      .openOn(map);
-  });
+  # save plots
+  saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.html'), selfcontained = TRUE)
+  webshot(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.png'), vwidth = 800, vheight = 600)
 }
-")
+## create a table of tags, group, last download date and batt level
+{
+  last_rows_per_tag <- daily_summary %>%
+    group_by(tag_local_identifier) %>%
+    filter(date == max(date)) %>%
+    select(tag_local_identifier , group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
+    ungroup()   %>%
+    st_drop_geometry() %>%
+    rename(status = rounded_time_diff)
   
-  # Add layer control
-  m <- m %>%
-    addLayersControl(
-      baseGroups = c("OSM", "Topo", "Terrain"),
-      overlayGroups = as.character(names_plot),
-      options = layersControlOptions(collapsed = FALSE)
+  last_rows_per_tag_html <- last_rows_per_tag
+  # Create HTML formatted columns
+  last_rows_per_tag_html$tag_local_identifier <- mapply(mark_status_change, 
+                                     last_rows_per_tag$status, 
+                                     last_rows_per_tag$last_batt_value,
+                                     last_rows_per_tag$tag_local_identifier)
+  
+  #last_rows_per_tag_html$date <- mapply(mark_old_downloads, last_rows_per_tag$date)
+  
+  interactive_table <- datatable(
+    last_rows_per_tag_html,
+    escape = FALSE,  # Allow HTML content to be rendered
+    options = list(
+      paging = TRUE,
+      searching = TRUE,
+      ordering = TRUE,
+      pageLength = nrow(last_rows_per_tag_html),
+      lengthMenu = c(10, 20, nrow(last_rows_per_tag_html)),
+      autoWidth = TRUE
     )
-  
-  
-  # Print the map
-  m
-  # Save the map as an HTML file
-  saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_interactive_map_2024.html'), selfcontained = TRUE)
-
-}
-## plot night site interactive by individual
-{
-# Assuming `data_rm_rest_group_members` has a column `timestamp` of class POSIXct
-  
-data_filtered_night <- combined_data %>%
-  mutate(date_val = as.Date(timestamp)) %>%
-  filter(date_val > ymd(date_start)) %>%
-  group_by(individual_local_identifier, date(timestamp)) %>%
-  slice(n()) %>%
-  ungroup()
-  
-  data_filtered_night<- data_filtered_night  %>%
-                        filter(format(timestamp, "%H:%M") >= "15:50")
-  
-  most_recent_timestamp <- max(data_filtered_night$timestamp, na.rm = TRUE)
-  data_filtered_night <- data_filtered_night %>%
-    mutate(days_ago = as.numeric(difftime(most_recent_timestamp, timestamp, units = "days")))
-  
-  # Normalize 'days ago' to an opacity value between 0.3 and 1
-  # The oldest data (max days ago) will have opacity = 0.3, and the most recent data (0 days ago) will have opacity = 1
-  # max_days_ago <- max(data_filtered_night$days_ago, na.rm = TRUE)
-  # data_filtered_night <- data_filtered_night %>%
-  #   mutate(opacity = 1 - (days_ago / max_days_ago * 0.9),
-  #          opacity = ifelse(opacity < 0.5, 0.5, opacity)) # Ensure opacity does not go below 0.3
-  
-
-# Create a color palette
-palette <- colorFactor("Set1", domain = names_plot)
-
-
-# Create the basic Leaflet map
-m <- leaflet() %>%
-  addTiles(group = "OSM") %>%
-  addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
-  addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
-  
-#     addTiles(options = providerTileOptions(opacity = 1))
-
-for(id in names_plot) {
-  data_subset <- data_filtered_night %>%
-    filter(plot_name == id) %>%
-    group_by(individual_local_identifier, day = date(timestamp)) %>%
-    summarise(location.lat = first(location.lat), 
-              location.long = first(location.long),
-              date_label = first(format(timestamp, "%Y-%m-%d")),
-    #          opacity = opacity,# Format the date as desired
-              .groups = 'drop')
- 
-  if (nrow(data_subset) > 0) {
-  m <- m %>%
-    addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                     color = ~palette(id), 
-    #                 opacity = 0, fillOpacity = ~opacity,
-                     radius = 6, 
-                     group = as.character(id), 
-                     label = ~date_label)
-}
-}
-
-m <- m %>% onRender("
-function(el, x) {
-  var map = this;
-  map.on('click', function(e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lon = e.latlng.lng.toFixed(5);
-    var popup = L.popup()
-      .setLatLng(e.latlng)
-      .setContent(lat + ', ' + lon)
-      .openOn(map);
-  });
-}
-")
-
-# Add layer control
-m <- m %>%
-  addLayersControl(
-    baseGroups = c("OSM", "Topo", "Terrain"),
-    overlayGroups = as.character(names_plot),
-    options = layersControlOptions(collapsed = FALSE)
   )
+  
+  # Save the table as an HTML file
+  saveWidget(interactive_table, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), selfcontained = TRUE)
+  webshot(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.png'), vwidth = 800, vheight = 1600)
+}
 
-# Print the map
-m
 
-# Save the map as an HTML file
-saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_night_interactive_map.html'), selfcontained = TRUE)
-}
-## plot night site interactive by group
-{
-    # Assuming `data_rm_rest_group_members` has a column `timestamp` of class POSIXct
-    
-    data_filtered_night <- combined_data %>%
-      mutate(date_val = as.Date(timestamp)) %>%
-      filter(date_val > ymd(date_start)) %>%
-      group_by(individual_local_identifier, date(timestamp)) %>%
-      slice(n()) %>%
-      ungroup()
-    
-    data_filtered_night<- data_filtered_night  %>%
-      filter(format(timestamp, "%H:%M") >= "15:50")
-    
-    most_recent_timestamp <- max(data_filtered_night$timestamp, na.rm = TRUE)
-    data_filtered_night <- data_filtered_night %>%
-      mutate(days_ago = as.numeric(difftime(most_recent_timestamp, timestamp, units = "days")))  
-    
-    data_filtered_night <- data_filtered_night %>%
-      group_by(group_id, date_val) %>%  # Group by group_id (individual_local_identifier) and date_val
-      slice(1) %>%                               # Keep only the first row per group_id per date_val
-      ungroup() 
-    
-    # Normalize 'days ago' to an opacity value between 0.3 and 1
-    # The oldest data (max days ago) will have opacity = 0.3, and the most recent data (0 days ago) will have opacity = 1
-    # max_days_ago <- max(data_filtered_night$days_ago, na.rm = TRUE)
-    # data_filtered_night <- data_filtered_night %>%
-    #   mutate(opacity = 1 - (days_ago / max_days_ago * 0.9),
-    #          opacity = ifelse(opacity < 0.5, 0.5, opacity)) # Ensure opacity does not go below 0.3
-    
-    
-    # Create a color palette
-    palette <- colorFactor("Set1", domain = names_plot)
-    
-    
-    # Create the basic Leaflet map
-    m <- leaflet() %>%
-      addTiles(group = "OSM") %>%
-      addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
-    
-    #     addTiles(options = providerTileOptions(opacity = 1))
-    
-    for(id in names_plot) {
-      data_subset <- data_filtered_night %>%
-        filter(plot_name == id) %>%
-        group_by(individual_local_identifier, day = date(timestamp)) %>%
-        summarise(location.lat = first(location.lat), 
-                  location.long = first(location.long),
-                  date_label = first(format(timestamp, "%Y-%m-%d")),
-                  #          opacity = opacity,# Format the date as desired
-                  .groups = 'drop')
-      
-      if (nrow(data_subset) > 0) {
-        m <- m %>%
-          addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                           color = ~palette(id), 
-                           #                 opacity = 0, fillOpacity = ~opacity,
-                           radius = 6, 
-                           group = as.character(id), 
-                           label = ~date_label)
-      }
-    }
-    
-    m <- m %>% onRender("
-function(el, x) {
-  var map = this;
-  map.on('click', function(e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lon = e.latlng.lng.toFixed(5);
-    var popup = L.popup()
-      .setLatLng(e.latlng)
-      .setContent(lat + ', ' + lon)
-      .openOn(map);
-  });
-}
-")
-    
-    # Add layer control
-    m <- m %>%
-      addLayersControl(
-        baseGroups = c("OSM", "Topo", "Terrain"),
-        overlayGroups = as.character(names_plot),
-        options = layersControlOptions(collapsed = FALSE)
-      )
-    
-    # Print the map
-    m
-    
-    # Save the map as an HTML file
-    saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_night_interactive_map.html'), selfcontained = TRUE)
-  }
-## plot map interactive - a specific variation between individuals - campsite
-{
-    # Generate a list of unique identifiers
-    #unique_ids <- unique(combined_data$individual_local_identifier)
-    #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
-    
-    combined_data <- combined_data %>%
-      filter(group_id %in% c("Campsite"))
-    # names for legend
-    names_plot <- unique(sort(combined_data$individual_local_identifier ))
-    # Create a color palette
-    pallete <- colorFactor("BuGn", domain = unique(sort(combined_data$timestamp)))
-    
-    
-    # Loop through each unique identifier to create a layer for each
-    # Create the basic Leaflet map
-    m <- leaflet() %>%
-      addTiles(group = "OSM") %>%
-      addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
-    
-    
-    
-    for(id in names_plot) {
-      data_subset <- subset(combined_data, individual_local_identifier == id) 
-      
-      m <- m %>%
-        addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                         color = ~pallete(timestamp), 
-                         opacity = .4, fillOpacity = .4,
-                         radius = .5, 
-                         group = as.character(id))
-    }
-    
-    
-    m <- m %>% onRender("
-function(el, x) {
-  var map = this;
-  map.on('click', function(e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lon = e.latlng.lng.toFixed(5);
-    var popup = L.popup()
-      .setLatLng(e.latlng)
-      .setContent(lat + ', ' + lon)
-      .openOn(map);
-  });
-}
-")
-    
-    # Add layer control
-    m <- m %>%
-      addLayersControl(
-        baseGroups = c("OSM", "Topo", "Terrain"),
-        overlayGroups = as.character(names_plot),
-        options = layersControlOptions(collapsed = FALSE)
-      )
-    
-    
-    # Print the map
-    m
-    # Save the map as an HTML file
-    saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_interactive_map_2024.html'), selfcontained = TRUE)
-    
-  }
-## plot map interactive - battery
-{
-  # Install plotly if you haven't already
-  install.packages("plotly")
-  
-  # Load the necessary libraries
-  library(ggplot2)
-  library(plotly)
-  
-  # Your ggplot code
-  records <- ggplot(recent_data, 
-                    aes(x = timestamp, 
-                        y = eobs_battery_voltage,
-                        color = tag_local_identifier,
-                        text = tag_local_identifier)) +  # Add text aesthetic for tooltip
-    geom_point() +
-    labs(x = "timestamp", y = "tagID")
-  
-  # Convert ggplot to plotly
-  interactive_plot <- ggplotly(records, tooltip = "text")
-  
-  # Display the interactive plot
-  interactive_plot
-}
+## plot basic maps prop sleep site - pie chart
+source("plot_leaflet_basic.R")
+
+## Run prop sleep site - pie chart
+source("sleep_site_mapbox.R")
   
