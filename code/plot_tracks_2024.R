@@ -236,7 +236,7 @@ saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_babo
 }
 
 
-## plot basic maps prop sleep site - pie chart
+## plot basic maps prop sleep site
 source("plot_leaflet_basic.R")
 
 ## Run prop sleep site - pie chart
