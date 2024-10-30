@@ -3,16 +3,6 @@
 ## Overview
 MBRP documentation project aims to provide comprehensive details about the various functionalities and scripts used for managing and analyzing tracking data.
 
-## Table of Contents
-- [Usage](#usage)
-  - [Plotting Tracks](#plotting-tracks)
-  - [Interactive Maps](#interactive-maps)
-  - [Sleep Site Maps](#sleep-site-maps)
-- [Workflow Automation](#workflow-automation)
-- [Contributing](#contributing)
-- [License](#license)
-
-- Usage
 Plotting Tracks
 plot_tracks_2024.R are used for processing and visualizing animal tracking data.
 The script processes and visualizes animal tracking data collected since March 2024. It connects to Movebank, downloads GPS data, cleans it, and generates various plots and interactive visualizations using libraries like ggplot2, leaflet, and plotly. The script also creates summary tables and maps based on the tracking data.
