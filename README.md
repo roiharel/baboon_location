@@ -17,3 +17,6 @@ baboon_movement_plots_and_graphs (John)
 This code processes and visualizes baboon movement data. It downloads GPS data from Movebank, cleans and merges it with metadata, and creates several plots: a bar plot showing the number of individuals per group, a line plot of group distribution over time, faceted plots showing distribution per group over time, and a spatial distribution plot of group movements by month.
 
 [Interactive Map](https://roiharel.github.io/MBRP/prop_sleep_site_map_2024.html)
+
+[Interactive Map](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map_2024.html)
+
