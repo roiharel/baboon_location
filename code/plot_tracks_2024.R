@@ -126,8 +126,19 @@ mark_old_downloads <- function(last_date) {
 ## load data and basic cleaning
 combined_data <- get_data(date_start, time_interval, speed_threshold)
 
+# Check if the directory exists, and create it if it doesn't
+# Define the path you want to create
+path_plots <- paste0('~/plots/',as.Date(Sys.Date(), format = "%Y%m%d"))
+if (!dir.exists(path_plots)) {
+  dir.create(path_plots, recursive = TRUE)
+  message("Directory created: ", path_plots)
+} else {
+  message("Directory already exists: ", path_plots)
+}
+
 ## plot data dist
 {
+  
 recent_data <- combined_data[combined_data$timestamp > date_start,]
 recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
 
@@ -146,9 +157,10 @@ records <- ggplot(recent_data,
   labs(x = "timestamp", y = "tagID") 
 interactive_plot <- ggplotly(records, tooltip = "text")
 # save plots
-saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_batt_plot.html'), selfcontained = TRUE)
+saveWidget(interactive_plot, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_data_batt_plot.html')
+, selfcontained = TRUE)
 }
-## Calculate median time difference, add group_id, and round it
+## calculate median time difference, add group_id, and round it
 {
   daily_summary <- recent_data %>%
     mutate(date = as.Date(timestamp),            # Extract date
@@ -198,9 +210,9 @@ saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_babo
   interactive_plot <- ggplotly(daily_plot, tooltip = "text")
   
   # save plots
-  saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.html'), selfcontained = TRUE)
-  webshot(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.png'), vwidth = 800, vheight = 600)
-}
+  saveWidget(interactive_plot, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_data_records.html'), selfcontained = TRUE)
+  webshot(paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_data_records.png'), vwidth = 800, vheight = 600)
+  }
 ## create a table of tags, group, last download date and batt level
 {
   last_rows_per_tag <- daily_summary %>%
@@ -234,8 +246,8 @@ saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_babo
   )
   
   # Save the table as an HTML file
-  saveWidget(interactive_table, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), selfcontained = TRUE)
-  webshot(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.png'), vwidth = 800, vheight = 1600)
+  saveWidget(interactive_table, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/table_baboon_data_records.html'), selfcontained = TRUE)
+  webshot(paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/table_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.png'), vwidth = 800, vheight = 1600)
 }
 ## plot maps
 {
