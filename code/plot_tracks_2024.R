@@ -33,7 +33,9 @@
 {
 #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
 #ggmap::register_google(key = "KEY")
-time_interval <- "1 secs"
+time_interval <- "1 mins"
+time_interval_low_res <- "10 mins" #time interval for plots
+  
 date_start <- as.POSIXct("2024-09-01 00:00:00")
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
@@ -78,9 +80,9 @@ get_data <- function(date_start, time_interval, speed_threshold) {
 
   combined_data <- combined_data %>%
     mutate(plot_name = paste(group_id, year(timestamp), sep = "_")) %>%
-    filter(plot_name != "Campsite_2020") %>%
     filter(tag_local_identifier != 6915)
-
+    # filter(plot_name != "Campsite_2020")
+  
 # Return the clustered data
 return(combined_data)
 
@@ -123,6 +125,7 @@ mark_old_downloads <- function(last_date) {
 }
 ## load data and basic cleaning
 combined_data <- get_data(date_start, time_interval, speed_threshold)
+
 ## plot data dist
 {
 recent_data <- combined_data[combined_data$timestamp > date_start,]
@@ -154,9 +157,9 @@ saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_babo
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   # Calculate median battery level
               .groups = "drop") %>%
-    mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(1, 120, 7200))) %>%
+    mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(60, 120, 7200))) %>%
     mutate(rounded_time_diff = recode(rounded_time_diff, 
-                                      "1" = "High",
+                                      "60" = "High",
                                       "120" = "Monitor",
                                       "7200" = "Rest")) 
   
@@ -234,11 +237,12 @@ saveWidget(interactive_plot, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_babo
   saveWidget(interactive_table, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), selfcontained = TRUE)
   webshot(paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.html'), file = paste(as.Date(Sys.Date(), format = "%Y%m%d"),'table_baboon_data_records.png'), vwidth = 800, vheight = 1600)
 }
-
-
+## plot maps
+{
+combined_data <- get_data(date_start, time_interval_low_res, speed_threshold)
 ## plot basic maps prop sleep site
 source("plot_leaflet_basic.R")
 
 ## Run prop sleep site - pie chart
 source("sleep_site_mapbox.R")
-  
+}
