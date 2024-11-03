@@ -18,5 +18,5 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Interactive Map](https://roiharel.github.io/MBRP/prop_sleep_site_map_2024.html)
 
-[Interactive Map](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map_2024.html)
+[Interactive Map](https://github.com/roiharel/MBRP/blob/gh-pages/plots/prop_sleep_site_map_2024.html)
 
