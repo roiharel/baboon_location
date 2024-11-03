@@ -246,66 +246,66 @@ function(el, x) {
     saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_night_interactive_map.html'), selfcontained = TRUE)
   }
   ## plot map interactive - a specific variation between individuals - campsite
-  {
-    # Generate a list of unique identifiers
-    #unique_ids <- unique(combined_data$individual_local_identifier)
-    #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
-    
-    combined_data_grp <- combined_data %>%
-      filter(group_id %in% c("Campsite"))
-    # names for legend
-    names_plot <- unique(sort(combined_data$individual_local_identifier ))
-    # Create a color palette
-    pallete <- colorFactor("BuGn", domain = unique(sort(combined_data$timestamp)))
-    
-    
-    # Loop through each unique identifier to create a layer for each
-    # Create the basic Leaflet map
-    m <- leaflet() %>%
-      addTiles(group = "OSM") %>%
-      addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
-    
-    
-    
-    for(id in names_plot) {
-      data_subset <- subset(combined_data_grp, individual_local_identifier == id) 
-      
-      m <- m %>%
-        addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                         color = ~pallete(timestamp), 
-                         opacity = .4, fillOpacity = .4,
-                         radius = .5, 
-                         group = as.character(id))
-    }
-    
-    
-    m <- m %>% onRender("
-function(el, x) {
-  var map = this;
-  map.on('click', function(e) {
-    var lat = e.latlng.lat.toFixed(5);
-    var lon = e.latlng.lng.toFixed(5);
-    var popup = L.popup()
-      .setLatLng(e.latlng)
-      .setContent(lat + ', ' + lon)
-      .openOn(map);
-  });
-}
-")
-    
-    # Add layer control
-    m <- m %>%
-      addLayersControl(
-        baseGroups = c("OSM", "Topo", "Terrain"),
-        overlayGroups = as.character(names_plot),
-        options = layersControlOptions(collapsed = FALSE)
-      )
-    
-    
-    # Print the map
-    m
-    # Save the map as an HTML file
-    saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_interactive_group_map_2024.html'), selfcontained = TRUE)
-    
-  }
+#   {
+#     # Generate a list of unique identifiers
+#     #unique_ids <- unique(combined_data$individual_local_identifier)
+#     #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
+#     
+#     combined_data_grp <- combined_data %>%
+#       filter(group_id %in% c("Campsite"))
+#     # names for legend
+#     names_plot <- unique(sort(combined_data$individual_local_identifier ))
+#     # Create a color palette
+#     pallete <- colorFactor("BuGn", domain = unique(sort(combined_data$timestamp)))
+#     
+#     
+#     # Loop through each unique identifier to create a layer for each
+#     # Create the basic Leaflet map
+#     m <- leaflet() %>%
+#       addTiles(group = "OSM") %>%
+#       addProviderTiles(providers$Esri.WorldTopoMap, group = "Topo") %>%
+#       addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))    
+#     
+#     
+#     
+#     for(id in names_plot) {
+#       data_subset <- subset(combined_data_grp, individual_local_identifier == id) 
+#       
+#       m <- m %>%
+#         addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
+#                          color = ~pallete(timestamp), 
+#                          opacity = .4, fillOpacity = .4,
+#                          radius = .5, 
+#                          group = as.character(id))
+#     }
+#     
+#     
+#     m <- m %>% onRender("
+# function(el, x) {
+#   var map = this;
+#   map.on('click', function(e) {
+#     var lat = e.latlng.lat.toFixed(5);
+#     var lon = e.latlng.lng.toFixed(5);
+#     var popup = L.popup()
+#       .setLatLng(e.latlng)
+#       .setContent(lat + ', ' + lon)
+#       .openOn(map);
+#   });
+# }
+# ")
+#     
+#     # Add layer control
+#     m <- m %>%
+#       addLayersControl(
+#         baseGroups = c("OSM", "Topo", "Terrain"),
+#         overlayGroups = as.character(names_plot),
+#         options = layersControlOptions(collapsed = FALSE)
+#       )
+#     
+#     
+#     # Print the map
+#     m
+#     # Save the map as an HTML file
+#     saveWidget(m, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_baboon_interactive_group_map_2024.html'), selfcontained = TRUE)
+#     
+#   }
