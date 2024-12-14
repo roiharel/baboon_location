@@ -1,0 +1,41 @@
+# Load required libraries
+library(move2)
+library(dplyr)
+library(lubridate)
+
+# Step 1: Define parameters for data retrieval
+date_start <- as.POSIXct("2024-11-01 00:00:00", tz = "UTC")  # Adjust start date as needed
+date_end <- as.POSIXct("2024-11-30 23:59:59", tz = "UTC")    # Adjust end date as needed
+study_id <- 3445611111  # Replace with your specific study ID
+
+# Step 2: Download acceleration data from Movebank
+acc_data <- movebank_download_study(
+  study_id = study_id,
+  sensor_type = "acceleration",   # Corrected sensor type parameter
+  timestamp_start = date_start,
+  timestamp_end = date_end,
+  
+)
+
+# Step 3: Calculate VeDBA for each burst
+# VeDBA = sqrt(x^2 + y^2 + z^2), where x, y, z are dynamic body acceleration values
+acc_data <- acc_data %>%
+  mutate(
+    vedba = sqrt((acceleration_x)^2 + (acceleration_y)^2 + (acceleration_z)^2)  # VeDBA formula
+  ) %>%
+  group_by(timestamp = floor_date(timestamp, unit = "1 second")) %>%  # Grouping by second
+  summarise(
+    avg_vedba = mean(vedba, na.rm = TRUE),  # Average VeDBA per second
+    .groups = "drop"
+  )
+
+# Step 4: Log-transform the average VeDBA
+acc_data <- acc_data %>%
+  mutate(log_avg_vedba = log(avg_vedba))
+
+# Step 5: Save the output to a CSV file
+output_file <- "full_night_and_day_data.csv"  # Specify the output file path
+write.csv(acc_data, file = output_file, row.names = FALSE)
+
+# Print completion message
+cat("Processed data saved to", output_file, "\n")
