@@ -42,7 +42,6 @@ cluster_positions <- function(data_filtered_night) {
   # Return the clustered data
   return(clustered_data)
 }
-
 # Row per cluster
 simplify_cluster_table <- function(clustered_data) {
   
@@ -79,7 +78,6 @@ simplify_cluster_table <- function(clustered_data) {
   # Return the cleaned and processed data
   return(clustered_data_clean)
 }
-
 ## plot pie plot
 create_leaflet_map_with_proportions <- function(clustered_data) {
   # Group by cluster and group_id, then calculate the proportions
@@ -127,7 +125,6 @@ create_leaflet_map_with_proportions <- function(clustered_data) {
   return(leaflet_map)
 }
 
-
 clustered_data <- cluster_positions(data_filtered_night)
 
 clustered_data_clean <- simplify_cluster_table(clustered_data)
@@ -138,6 +135,5 @@ write.csv(clustered_data_clean, "clustered_data_clean.csv", row.names = FALSE)
 
 # Display the map
 leaflet_map <- create_leaflet_map_with_proportions(clustered_data)
-leaflet_map  # 
 
 saveWidget(leaflet_map, paste(as.Date(Sys.Date(), format = "%Y%m%d"),'_prop_sleep_site_map_2024.html'), selfcontained = TRUE)
