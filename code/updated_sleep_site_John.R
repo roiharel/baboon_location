@@ -1,4 +1,4 @@
-Here's the complete and cleaned-up code as a single block:
+##Here's the complete and cleaned-up code as a single block:
 
 ```r
 # Load required libraries
@@ -114,4 +114,4 @@ leaflet() %>%
   setView(lng = mean(group_counts$avg_long), lat = mean(group_counts$avg_lat), zoom = 12)
 ```
 
-This complete script is streamlined for readability and execution while preserving all functionality.
+## This complete script is streamlined for readability and execution while preserving all functionality.
