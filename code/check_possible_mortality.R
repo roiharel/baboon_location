@@ -1,9 +1,21 @@
 days_window <- 4 # window in days - max distance 
 # calc max distance from origin - daily 
-daily_summary <- daily_summary %>%
-  left_join(
-    max_distance_summary,  # Data containing max distances
-    by = c("tag_local_identifier", "date")  # Common keys for merging
+
+max_distance_summary <- recent_data %>%
+  arrange(tag_local_identifier, timestamp) %>%  # Ensure data is sorted by individual and time
+  mutate(date = as.Date(timestamp)) %>%         # Extract date
+  group_by(tag_local_identifier, date) %>%
+  mutate(
+    start_long = first(location.long),  # Get starting longitude for the day
+    start_lat = first(location.lat),    # Get starting latitude for the day
+    distance_from_start = distHaversine(
+      cbind(start_long, start_lat), 
+      cbind(location.long, location.lat)
+    ) / 1000  # Convert meters to kilometers
+  ) %>%
+  summarize(
+    max_distance_from_start = max(distance_from_start, na.rm = TRUE),  # Max distance from the start
+    .groups = "drop"
   )
 
 max_distance_summary <- max_distance_summary %>%
@@ -23,6 +35,23 @@ max_distance_summary <- max_distance_summary %>%
   ) %>%
   ungroup()  # Remove grouping
 
+
+max_distance_summary <- max_distance_summary %>%
+  arrange(tag_local_identifier, date) %>%  # Ensure the data is sorted
+  group_by(tag_local_identifier) %>%       # Group by identifier
+  mutate(
+    max_last_days = map_dbl(date, function(current_date) {
+      relevant_values <- max_distance_from_start[
+        date < current_date & date >= current_date - days_window
+      ]
+      if (length(relevant_values) > 0) {
+        max(relevant_values, na.rm = TRUE)
+      } else {
+        NA_real_  # Return NA if no relevant values
+      }
+    })
+  ) %>%
+  ungroup()  # Remove grouping
 
 # Join the calculated max_last_days to daily_summary
 daily_summary <- daily_summary %>%
@@ -107,7 +136,7 @@ for (group in group_ids) {
   
   
   # Save the plot as an HTML file
-  output_file <- paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),"/group_", group, "_distance_plot.html")
+  output_file <- paste0('plots/',"/group_", group, "_distance_plot.html")
   
   output_file <- paste0()
   saveWidget(group_plot, file = output_file, selfcontained = TRUE)
