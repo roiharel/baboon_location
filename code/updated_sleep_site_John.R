@@ -1,0 +1,117 @@
+##Here's the complete and cleaned-up code as a single block:
+
+```r
+# Load required libraries
+library(move2)
+library(dplyr)
+library(lubridate)
+library(sf)
+library(ggplot2)
+library(dbscan)
+library(RColorBrewer)
+library(leaflet)
+
+# Define parameters for data retrieval
+time_interval <- "10 mins"
+date_start <- as.POSIXct("2024-03-01 00:00:00")
+
+# Download and process baboon data
+baboon_data <- movebank_download_study(
+  study_id = 3445611111,
+  sensor_type_id = "gps",
+  timestamp_start = date_start,
+  remove_movebank_outliers = TRUE
+)
+
+# Retrieve metadata and merge with main data
+metadata <- mt_track_data(baboon_data)
+baboon_data <- baboon_data %>%
+  left_join(metadata %>% select(individual_local_identifier, group_id), 
+            by = "individual_local_identifier") %>%
+  mt_filter_per_interval(unit = time_interval)
+
+# Extract coordinates and filter nighttime data (17:00 to 05:00)
+baboon_data <- baboon_data %>%
+  mutate(
+    location_long = as.numeric(st_coordinates(baboon_data)[, 1]),
+    location_lat = as.numeric(st_coordinates(baboon_data)[, 2])
+  ) %>%
+  filter(hour(timestamp) >= 17 | hour(timestamp) < 5) %>%
+  filter(!is.na(location_long) & !is.na(location_lat))
+
+# Convert to spatial data for clustering
+baboon_sf <- st_as_sf(baboon_data, coords = c("location_long", "location_lat"), crs = 4326)
+
+# Cluster sleeping sites using DBSCAN
+dbscan_result <- dbscan::dbscan(st_coordinates(baboon_sf), eps = 0.005, minPts = 5)
+baboon_sf$cluster <- as.factor(dbscan_result$cluster)
+
+# Count unique groups at each sleeping site
+group_counts <- baboon_sf %>%
+  group_by(cluster) %>%
+  summarise(
+    num_groups = n_distinct(group_id),
+    groups = paste(unique(group_id), collapse = ", "),
+    avg_long = mean(st_coordinates(geometry)[, 1], na.rm = TRUE),
+    avg_lat = mean(st_coordinates(geometry)[, 2], na.rm = TRUE)
+  )
+
+# Plot sleeping sites with group counts
+ggplot(group_counts, aes(x = avg_long, y = avg_lat, size = num_groups, color = num_groups)) +
+  geom_point(alpha = 0.7) +
+  geom_text(aes(label = groups), vjust = -1, hjust = 1, size = 3) +
+  labs(
+    title = "Number of Groups Using Each Sleeping Site",
+    x = "Longitude",
+    y = "Latitude",
+    size = "Number of Groups",
+    color = "Number of Groups"
+  ) +
+  scale_color_gradient(low = "blue", high = "red") +
+  theme_minimal()
+
+# Plot number of sleeping sites per group
+site_count_per_group <- baboon_sf %>%
+  group_by(group_id, cluster) %>%
+  summarise(sleeping_sites = n_distinct(cluster), .groups = "drop")
+
+ggplot(site_count_per_group, aes(x = factor(group_id), y = sleeping_sites, fill = factor(group_id))) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Number of Sleeping Sites per Group",
+    x = "Group ID",
+    y = "Number of Sleeping Sites",
+    fill = "Group ID"
+  ) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set3") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Create leaflet map with sleeping sites and group labels
+leaflet() %>%
+  addProviderTiles("OpenStreetMap") %>%
+  addCircleMarkers(
+    data = group_counts,
+    lng = ~avg_long,
+    lat = ~avg_lat,
+    radius = 5,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.7
+  ) %>%
+  addLabelOnlyMarkers(
+    data = group_counts,
+    lng = ~avg_long,
+    lat = ~avg_lat,
+    label = ~groups,
+    labelOptions = labelOptions(
+      noHide = TRUE, 
+      direction = "top", 
+      textsize = "12px", 
+      fontWeight = "bold"
+    )
+  ) %>%
+  setView(lng = mean(group_counts$avg_long), lat = mean(group_counts$avg_lat), zoom = 12)
+```
+
+## This complete script is streamlined for readability and execution while preserving all functionality.
