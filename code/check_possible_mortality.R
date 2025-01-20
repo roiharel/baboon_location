@@ -92,53 +92,53 @@ interactive_plot <- interactive_plot %>%
   )
 
 # Show the plot
-output_file <- paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/all_ind_distance_plot.html')
+output_file <- paste0('plots/','/all_ind_distance_plot.html')
 saveWidget(interactive_plot, file = output_file, selfcontained = TRUE)
 
 }
 
 ## plot group by group
-
-# Get unique group IDs
-group_ids <- unique(plot_data$group_id)
-
-# Loop through each group ID and create a plot
-for (group in group_ids) {
-  # Filter data for the current group
-  group_data <- plot_data %>% filter(group_id == group)
-  
-  # Create the plot
-  group_plot <- plot_ly(
-    data = group_data,
-    x = ~date,
-    y = ~max_last_days ,
-    color = ~as.factor(tag_local_identifier),  # Color by tag ID within the group
-    type = 'scatter',
-    mode = 'lines+markers',
-    line = list(width = 2)
-  ) %>%
-    layout(
-      title = paste("max_distance_from_start  - Group", group),
-      xaxis = list(title = "Date"),
-      yaxis = list(title = "max_distance_from_start  (km)"),
-      legend = list(
-        title = list(text = "Tag ID"),  # Display legend with Tag IDs
-        itemclick = "toggleothers"  # Clicking a line shows only that line
-        
-      )
-    )
-  
-  interactive_plot <- interactive_plot %>%
-    add_trace(
-      text = ~paste("Tag ID:", tag_local_identifier, "<br>Animal ID:", individual_local_identifier, "<br>Group ID:", group_id),
-      hoverinfo = "text"  # Customize hover text
-    )
-  
-  
-  # Save the plot as an HTML file
-  output_file <- paste0('plots/',"/group_", group, "_distance_plot.html")
-  
-  output_file <- paste0()
-  saveWidget(group_plot, file = output_file, selfcontained = TRUE)
-}
-
+# 
+# # Get unique group IDs
+# group_ids <- unique(plot_data$group_id)
+# 
+# # Loop through each group ID and create a plot
+# for (group in group_ids) {
+#   # Filter data for the current group
+#   group_data <- plot_data %>% filter(group_id == group)
+#   
+#   # Create the plot
+#   group_plot <- plot_ly(
+#     data = group_data,
+#     x = ~date,
+#     y = ~max_last_days ,
+#     color = ~as.factor(tag_local_identifier),  # Color by tag ID within the group
+#     type = 'scatter',
+#     mode = 'lines+markers',
+#     line = list(width = 2)
+#   ) %>%
+#     layout(
+#       title = paste("max_distance_from_start  - Group", group),
+#       xaxis = list(title = "Date"),
+#       yaxis = list(title = "max_distance_from_start  (km)"),
+#       legend = list(
+#         title = list(text = "Tag ID"),  # Display legend with Tag IDs
+#         itemclick = "toggleothers"  # Clicking a line shows only that line
+#         
+#       )
+#     )
+#   
+#   interactive_plot <- interactive_plot %>%
+#     add_trace(
+#       text = ~paste("Tag ID:", tag_local_identifier, "<br>Animal ID:", individual_local_identifier, "<br>Group ID:", group_id),
+#       hoverinfo = "text"  # Customize hover text
+#     )
+#   
+#   
+#   # Save the plot as an HTML file
+#   output_file <- paste0('plots/',"/group_", group, "_distance_plot.html")
+#   
+#   output_file <- paste0()
+#   saveWidget(group_plot, file = output_file, selfcontained = TRUE)
+# }
+# 
