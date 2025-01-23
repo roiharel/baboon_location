@@ -14,6 +14,7 @@
   library(mapview)
   library(webshot)
   library(leaflet)
+  library(leaflet.minicharts)
   library(htmlwidgets)
   library(RColorBrewer)
   library(units)
