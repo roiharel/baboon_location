@@ -18,7 +18,7 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Field control table](https://roiharel.github.io/MBRP/plots/table_baboon_data_records.html)
 
-[Map - day&night](https://roiharel.github.io/MBRP/plots/baboon_interactive_map_2024.html)
+[Map - day&night](https://roiharel.github.io/MBRP/plots/baboon_interactive_map.html)
 
 [Cum. dist - possible mortality](https://roiharel.github.io/MBRP/plots/all_ind_distance_plot.html)
 
@@ -28,5 +28,5 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Map - night](https://roiharel.github.io/MBRP/plots/baboon_night_interactive_map.html)
 
-[Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map_2024.html)
+[Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map.html)
 
