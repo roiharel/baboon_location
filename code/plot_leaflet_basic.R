@@ -63,7 +63,7 @@ function(el, x) {
   # Print the map
   m
   # Save the map as an HTML file
-  saveWidget(m, paste0('plots/','/baboon_interactive_map_2024.html'), selfcontained = TRUE)
+  saveWidget(m, paste0('plots/','/baboon_interactive_map.html'), selfcontained = TRUE)
   
 }
   ## plot night site interactive by individual
@@ -306,6 +306,6 @@ function(el, x) {
 #     # Print the map
 #     m
 #     # Save the map as an HTML file
-#     saveWidget(m, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_interactive_group_map_2024.html'), selfcontained = TRUE)
+#     saveWidget(m, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_interactive_group_map.html'), selfcontained = TRUE)
 #     
 #   }

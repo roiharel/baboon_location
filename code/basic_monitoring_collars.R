@@ -35,7 +35,7 @@
   #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
   #ggmap::register_google(key = "KEY")
   time_interval <- "1 mins"
-  time_interval_low_res <- "10 mins" #time interval for plots
+  time_interval_low_res <- "1 hours" #time interval for plots
   
   date_start <- as.POSIXct("2024-09-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
@@ -45,43 +45,48 @@
 {
   # load data and basic cleaning
   get_data <- function(date_start, time_interval, speed_threshold) {
-    baboon_data_2024 <- movebank_download_study(3445611111, sensor_type_id = c("gps"), 
+    baboon_data <- movebank_download_study(3445611111, sensor_type_id = c("gps"), 
                                                 timestamp_start = date_start,
                                                 # individual_id = c(3487912671, 3487912662, 3487912663, 3487844492, 3508338112, 3938663627),
                                                 remove_movebank_outliers = TRUE) %>%
       filter(!st_is_empty(.))     # remove empty rows
     
     # calc speed azimuth and clean speed outliers
-    baboon_data_2024 %<>% mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
-    baboon_data_2024$speed <- set_units(baboon_data_2024$speed, "m/s")
-    baboon_data_2024 <- baboon_data_2024 %>%
+    baboon_data %<>% mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
+    baboon_data$speed <- set_units(baboon_data$speed, "m/s")
+    baboon_data <- baboon_data %>%
       filter(speed <= speed_threshold | is.na(speed))
     
     # add fields from metadata
-    metadata_2024 <- mt_track_data(baboon_data_2024)
+    metadata <- mt_track_data(baboon_data)
     
-    baboon_data_2024 <- baboon_data_2024 %>%
-      left_join(metadata_2024 %>% 
+    baboon_data <- baboon_data %>%
+      left_join(metadata %>% 
                   select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
       mt_filter_per_interval(unit = time_interval)
     
-    baboon_data_2024$location.long <- sf::st_coordinates(baboon_data_2024)[,1]
-    baboon_data_2024$location.lat <- sf::st_coordinates(baboon_data_2024)[,2]
-    baboon_data_2024$group_id <- baboon_data_2024$group_id
+    baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
+    baboon_data$location.lat <- sf::st_coordinates(baboon_data)[,2]
+    baboon_data$group_id <- baboon_data$group_id
     
     
     # Identify matching columns
-    matching_columns <- Reduce(intersect, list(names(baboon_data_2024)))
+    matching_columns <- Reduce(intersect, list(names(baboon_data)))
     
     
     # Join tibbles while keeping only matching columns
     combined_data <- bind_rows(
-      select(as.data.frame(baboon_data_2024), matching_columns)
+      select(as.data.frame(baboon_data), matching_columns)
     )
     
+    # combined_data <- combined_data %>%
+    #   mutate(plot_name = paste(group_id, year(timestamp), sep = "_")) %>%
+    #   filter(tag_local_identifier != 6915)
+    
     combined_data <- combined_data %>%
-      mutate(plot_name = paste(group_id, year(timestamp), sep = "_")) %>%
+      mutate(plot_name = paste(group_id, sep = "_")) %>%
       filter(tag_local_identifier != 6915)
+    
     # filter(plot_name != "Campsite_2020")
     
     # Return the clustered data
