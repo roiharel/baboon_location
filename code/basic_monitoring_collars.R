@@ -37,7 +37,7 @@
   time_interval <- "1 mins"
   time_interval_low_res <- "1 hours" #time interval for plots
   
-  date_start <- as.POSIXct("2024-09-01 00:00:00")
+  date_start <- as.POSIXct("2024-07-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
 }
@@ -134,16 +134,16 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 
 # Check if the directory exists, and create it if it doesn't
 # Define the path you want to create
-path_plots <- paste0('~/plots/',as.Date(Sys.Date(), format = "%Y%m%d"))
-if (!dir.exists(path_plots)) {
-  dir.create(path_plots, recursive = TRUE)
-  message("Directory created: ", path_plots)
-} else {
-  message("Directory already exists: ", path_plots)
-}
-# as.Date(Sys.Date(), format = "%Y%m%d"), # if date is needed
-## plot data dist
-{
+# path_plots <- paste0('~/plots/',as.Date(Sys.Date(), format = "%Y%m%d"))
+# if (!dir.exists(path_plots)) {
+#   dir.create(path_plots, recursive = TRUE)
+#   message("Directory created: ", path_plots)
+# } else {
+#   message("Directory already exists: ", path_plots)
+# }
+# # as.Date(Sys.Date(), format = "%Y%m%d"), # if date is needed
+# ## plot data dist
+ {
   
   recent_data <- combined_data[combined_data$timestamp > date_start,]
   recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
