@@ -5,8 +5,8 @@ library(lubridate)  # For working with date and time
 library(stringr)    # For string manipulation
 
 # Step 1: Define parameters for data retrieval
-date_start <- as.POSIXct("2024-11-01 00:00:00", tz = "UTC")  # Start time for data retrieval
-date_end <- as.POSIXct("2024-11-01 23:59:59", tz = "UTC")    # End time for data retrieval
+date_start <- as.POSIXct("2024-03-01 00:00:00", tz = "UTC")  # Start time for data retrieval
+date_end <- as.POSIXct("2025-01-01 23:59:59", tz = "UTC")    # End time for data retrieval
 study_id <- 3445611111  # Movebank study ID
 
 # Step 2: Download acceleration data from Movebank
@@ -16,6 +16,7 @@ acc_data <- movebank_download_study(
     timestamp_start = date_start,      # Start time for filtering data
     timestamp_end = date_end           # End time for filtering data
 )
+
 
 # Step 3: Clean and process the data
 acc_data <- acc_data %>%
@@ -27,6 +28,34 @@ acc_data <- acc_data %>%
 acc_data$local_timestamp <- as.POSIXct(acc_data$local_timestamp, tz = "UTC")  # Ensure proper datetime format
 
 acc_data <- acc_data %>% filter(eobs_accelerations_raw != "")  # Remove rows with missing acceleration data
+
+# Load necessary libraries
+library(ggplot2)
+library(lubridate)
+
+# Assuming acc_data has columns: time, animal_id, and tag
+# Convert time to a date-time object if it's not already
+acc_data$time <- ymd_hms(acc_data$local_timestamp)
+
+acc_data2 <- acc_data[sample(nrow(acc_data), 100000, replace = TRUE),]
+         
+metadata <- mt_track_data(acc_data2)
+
+acc_data2 <- acc_data2 %>%
+  left_join(metadata %>% 
+              select(individual_local_identifier , tag_id  , group_id, sex), by = c("tag" = "individual_local_identifier"))  %>%
+  mt_filter_per_interval(unit = time_interval)
+
+acc_data2$group_id <- acc_data2$group_id
+
+# Create the plot
+ggplot(acc_data2, aes(x = time, y = tag)) +
+  geom_point() +
+  scale_x_datetime(date_labels = "%Y-%m-%d", date_breaks = "1 week") +
+  labs(x = "Date Time", y = "Animal ID \ Tag") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
 
 # Step 4: Parse accelerations into X, Y, Z components
 d2 <- as.data.frame(str_split(acc_data$eobs_accelerations_raw, " ", simplify = TRUE))  # Split raw data into components
