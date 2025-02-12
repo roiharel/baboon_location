@@ -143,7 +143,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 # }
 # # as.Date(Sys.Date(), format = "%Y%m%d"), # if date is needed
 # ## plot data dist
- {
+{
   
   recent_data <- combined_data[combined_data$timestamp > date_start,]
   recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
@@ -293,19 +293,17 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 #   )
 # }
 ## plot maps
-{
-  combined_data <- get_data(date_start, time_interval_low_res, speed_threshold)
-  ## plot basic maps prop sleep site
-  source("code/plot_leaflet_basic.R")
+combined_data <- get_data(date_start, time_interval_low_res, speed_threshold)
+## plot basic maps prop sleep site
+source("code/plot_leaflet_basic.R")
+
+## Run prop sleep site - pie chart
+source("code/sleep_site_mapbox.R")
+
+## Run possible mortality plot
+source("code/check_possible_mortality.R")
   
-  ## Run prop sleep site - pie chart
-  source("code/sleep_site_mapbox.R")
-  
-  ## Run possible mortality plot
-  source("code/check_possible_mortality.R")
-  
-  
-}
+
 
 
 # System commands to commit and push changes
