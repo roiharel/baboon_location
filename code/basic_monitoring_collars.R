@@ -172,7 +172,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   daily_summary <- recent_data %>%
     mutate(date = as.Date(timestamp),            # Extract date
            time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
-    group_by(tag_local_identifier, group_id, date) %>%
+    group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   # Calculate median battery level
               .groups = "drop") %>%
@@ -213,7 +213,9 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
     theme(axis.text.y = element_text(angle = 0, hjust = 1)) +  # Adjust text if needed
     scale_y_discrete(drop = FALSE) +  # Keep all levels even if some are missing 
     scale_color_gradientn(colors = heat.colors(20), 
-                          limits = c(3590, 4000))  
+                          limits = c(3590, 4000)) +
+    scale_x_date(date_breaks = "1 week", date_labels = "%Y-%m-%d") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
   interactive_plot <- ggplotly(daily_plot, tooltip = "text")
   
   # save plots
@@ -225,7 +227,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   last_rows_per_tag <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    select(tag_local_identifier , group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
+    select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
     ungroup()   %>%
     st_drop_geometry() %>%
     rename(status = rounded_time_diff)
