@@ -9,7 +9,7 @@
   library(dplyr)
   library(ggmap)
   library(maps)
-  
+  library(moveVis)
   library(sf)
   library(mapview)
   library(webshot)
@@ -37,7 +37,7 @@
   time_interval <- "1 mins"
   time_interval_low_res <- "1 hours" #time interval for plots
   
-  date_start <- as.POSIXct("2024-07-01 00:00:00")
+  date_start <- as.POSIXct("2024-03-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
 }
@@ -154,13 +154,16 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
     unique()
   
   recent_data$tag_local_identifier <- factor(recent_data$tag_local_identifier, levels = ordered_levels)
+  recent_data$timestamp <- as.Date(recent_data$timestamp)
   
   records <- ggplot(recent_data, 
                     aes(x = timestamp, 
-                        y = eobs_battery_voltage,
+                        y = tag_local_identifier,
                         color = tag_local_identifier)) +
     geom_point() +
-    labs(x = "timestamp", y = "tagID") 
+    labs(x = "timestamp", y = "tagID") +
+    scale_x_date(date_breaks = "1 day", date_labels = "%Y-%m-%d")
+  
   interactive_plot <- ggplotly(records, tooltip = "text")
   # save plots
   
@@ -313,3 +316,61 @@ system("git add .")  # Add all changes
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
 system(paste('git commit -m "', commit_message, '"', sep = ""))
 system("git push origin main")  # Push to the main branch
+
+
+
+# Load necessary libraries
+library(move)
+library(moveVis)
+
+
+# Function to create movement plots 
+create_movement_plot <- function(data, plot_name, plot_names, date_start) {
+  # Create a moveVis frames object
+  # Filter data for the current plot
+  recent_data <- combined_data[data$timestamp > date_start,]
+  # create spatial frames with a OpenStreetMap watercolour map
+  plot_data <- recent_data[recent_data$group_id == plot_name, ]
+  
+  plot_data$timestamp <- as.POSIXct(plot_data$timestamp, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
+  
+  # Remove duplicates by keeping the first occurrence
+  plot_data <- plot_data[!duplicated(plot_data[, c("individual_local_identifier", "timestamp")]), ]
+  
+  # Assuming plot_data is your filtered data frame for each plot
+  move_data <- df2move(
+    plot_data,
+    proj = "+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0",
+    x = "location.long", 
+    y = "location.lat", 
+    time = "timestamp", 
+    track_id = "individual_local_identifier"
+  )
+  
+  move_data <- moveStack(move_data, forceTz="UTC") 
+  
+  move_data <- align_move(m = move_data, res = 1, unit = "hours")
+  
+  frames <- frames_spatial(move_data, map_type = "topographic",
+                           path_colours = rainbow(length(unique(plot_data$individual_local_identifier))),
+                           path_legend  = FALSE
+  ) %>% 
+    add_northarrow() %>% 
+    add_scalebar()  %>% 
+    add_timestamps(type = "label") %>% 
+    add_progress()
+  
+  
+  animate_frames(frames, out_file = paste0(plot_name, ".mp4"))
+}
+
+# Assuming plot_names is a vector of unique plot names in your data
+plot_names <- unique(recent_data$group_id)
+
+# Loop through each plot name and create a video
+for (plot_name in plot_names) {
+  # Create the movement plot
+  create_movement_plot(move_data, plot_name, plot_names, date_start)
+}
+
+
