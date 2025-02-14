@@ -143,7 +143,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 # }
 # # as.Date(Sys.Date(), format = "%Y%m%d"), # if date is needed
 # ## plot data dist
- {
+{
   
   recent_data <- combined_data[combined_data$timestamp > date_start,]
   recent_data$tag_local_identifier <- with(recent_data, reorder(tag_local_identifier, group_id))
@@ -175,7 +175,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   daily_summary <- recent_data %>%
     mutate(date = as.Date(timestamp),            # Extract date
            time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
-    group_by(tag_local_identifier, group_id, date) %>%
+    group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   # Calculate median battery level
               .groups = "drop") %>%
@@ -216,7 +216,9 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
     theme(axis.text.y = element_text(angle = 0, hjust = 1)) +  # Adjust text if needed
     scale_y_discrete(drop = FALSE) +  # Keep all levels even if some are missing 
     scale_color_gradientn(colors = heat.colors(20), 
-                          limits = c(3590, 4000))  
+                          limits = c(3590, 4000)) +
+    scale_x_date(date_breaks = "1 week", date_labels = "%Y-%m-%d") +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
   interactive_plot <- ggplotly(daily_plot, tooltip = "text")
   
   # save plots
@@ -228,7 +230,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   last_rows_per_tag <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    select(tag_local_identifier , group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
+    select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
     ungroup()   %>%
     st_drop_geometry() %>%
     rename(status = rounded_time_diff)
@@ -296,19 +298,17 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 #   )
 # }
 ## plot maps
-{
-  combined_data <- get_data(date_start, time_interval_low_res, speed_threshold)
-  ## plot basic maps prop sleep site
-  source("code/plot_leaflet_basic.R")
+combined_data <- get_data(date_start, time_interval_low_res, speed_threshold)
+## plot basic maps prop sleep site
+source("code/plot_leaflet_basic.R")
+
+## Run prop sleep site - pie chart
+source("code/sleep_site_mapbox.R")
+
+## Run possible mortality plot
+source("code/check_possible_mortality.R")
   
-  ## Run prop sleep site - pie chart
-  source("code/sleep_site_mapbox.R")
-  
-  ## Run possible mortality plot
-  source("code/check_possible_mortality.R")
-  
-  
-}
+
 
 
 # System commands to commit and push changes
