@@ -34,6 +34,12 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 ## Animations by group
 
+[Campsite](https://roiharel.github.io/MBRP/plots/animations/Campsite.mp4)
+
+[Cliff](https://roiharel.github.io/MBRP/plots/animations/Cliff.mp4)
+
 [Clifford](https://roiharel.github.io/MBRP/plots/animations/Clifford.mp4)
+
+[Eagle Scout](https://roiharel.github.io/MBRP/plots/animations/Eaglescout.mp4)
 
 
