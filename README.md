@@ -16,6 +16,8 @@ The sleep_site_mapbox.R script clusters GPS data points to identify sleep sites 
 baboon_movement_plots_and_graphs (John)
 This code processes and visualizes baboon movement data. It downloads GPS data from Movebank, cleans and merges it with metadata, and creates several plots: a bar plot showing the number of individuals per group, a line plot of group distribution over time, faceted plots showing distribution per group over time, and a spatial distribution plot of group movements by month.
 
+## Monitoring tracking data
+
 [Field control table](https://roiharel.github.io/MBRP/plots/table_baboon_data_records.html)
 
 [Map - day&night](https://roiharel.github.io/MBRP/plots/baboon_interactive_map.html)
@@ -29,4 +31,9 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 [Map - night](https://roiharel.github.io/MBRP/plots/baboon_night_interactive_map.html)
 
 [Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map.html)
+
+## Animations by group
+
+[Clifford](https://roiharel.github.io/MBRP/plots/animations/Clifford.mp4)
+
 
