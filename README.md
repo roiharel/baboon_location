@@ -58,24 +58,22 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [CampSite](https://roiharel.github.io/MBRP/plots/kmls/day/Campsite.kmz)
 
-[CampSite](https://github.com/roiharel/MBRP/plots/kmls/day/Campsite.kmz)
+[Cliff](https://roiharel.github.io/MBRP/plots/kmls/day/Cliff.kmz)
 
-[Cliff](https://roiharel.github.io/MBRP/plots/kmls/Cliff.kmz)
+[Clifford](https://roiharel.github.io/MBRP/plots/kmls/day/Clifford.kmz)
 
-[Clifford](https://roiharel.github.io/MBRP/plots/kmls/Clifford.kmz)
+[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/day/Eaglescout.kmz)
 
-[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/Eaglescout.kmz)
+[Leikiji](https://roiharel.github.io/MBRP/plots/kmls/day/Leikiji.kmz)
 
-[Leikiji](https://roiharel.github.io/MBRP/plots/kmls/Leikiji.kmz)
+[LizardRock](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock.kmz)
 
-[LizardRock](https://roiharel.github.io/MBRP/plots/kmls/LizardRock.kmz)
+[LizardRock2](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock2.kmz)
 
-[LizardRock2](https://roiharel.github.io/MBRP/plots/kmls/LizardRock2.kmz)
+[Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
 
-[Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/Mlimafisi.kmz)
+[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/day/Pylopn.kmz)
 
-[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/Pylopn.kmz)
-
-[WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/WestMukenya.kmz)
+[WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
 
 
