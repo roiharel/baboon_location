@@ -34,12 +34,42 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 ## Animations by group
 
-[Campsite](https://roiharel.github.io/MBRP/plots/animations/Campsite.mp4)
+[CampSite](https://roiharel.github.io/MBRP/plots/animations/Campsite.mp4)
 
 [Cliff](https://roiharel.github.io/MBRP/plots/animations/Cliff.mp4)
 
 [Clifford](https://roiharel.github.io/MBRP/plots/animations/Clifford.mp4)
 
-[Eagle Scout](https://roiharel.github.io/MBRP/plots/animations/Eaglescout.mp4)
+[EagleScout](https://roiharel.github.io/MBRP/plots/animations/Eaglescout.mp4)
+
+[Mlimafissi](https://roiharel.github.io/MBRP/plots/animations/Mlimafissi.mp4)
+
+[Leikiji](https://roiharel.github.io/MBRP/plots/animations/Leikiji.mp4)
+
+[LizardRock](https://roiharel.github.io/MBRP/plots/animations/LizardRock.mp4)
+
+[LizardRock2](https://roiharel.github.io/MBRP/plots/animations/LizardRock2.mp4)
+
+[WestMukenya](https://roiharel.github.io/MBRP/plots/animations/WestMukenya.mp4)
+
+## kmls by group
+
+[CampSite](https://roiharel.github.io/MBRP/plots/kmls/Campsite.kmz)
+
+[Cliff](https://roiharel.github.io/MBRP/plots/kmls/Cliff.kmz)
+
+[Clifford](https://roiharel.github.io/MBRP/plots/kmls/Clifford.kmz)
+
+[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/Eaglescout.kmz)
+
+[Mlimafissi](https://roiharel.github.io/MBRP/plots/kmls/Mlimafissi.kmz)
+
+[Leikiji](https://roiharel.github.io/MBRP/plots/kmls/Leikiji.kmz)
+
+[LizardRock](https://roiharel.github.io/MBRP/plots/kmls/LizardRock.kmz)
+
+[LizardRock2](https://roiharel.github.io/MBRP/plots/kmls/LizardRock2.kmz)
+
+[WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/WestMukenya.kmz)
 
 
