@@ -42,13 +42,15 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [EagleScout](https://roiharel.github.io/MBRP/plots/animations/Eaglescout.mp4)
 
-[Mlimafissi](https://roiharel.github.io/MBRP/plots/animations/Mlimafissi.mp4)
-
 [Leikiji](https://roiharel.github.io/MBRP/plots/animations/Leikiji.mp4)
 
 [LizardRock](https://roiharel.github.io/MBRP/plots/animations/LizardRock.mp4)
 
 [LizardRock2](https://roiharel.github.io/MBRP/plots/animations/LizardRock2.mp4)
+
+[Mlimafisi](https://roiharel.github.io/MBRP/plots/animations/Mlimafisi.mp4)
+
+[Pylon](https://roiharel.github.io/MBRP/plots/animations/Pylon.mp4)
 
 [WestMukenya](https://roiharel.github.io/MBRP/plots/animations/WestMukenya.mp4)
 
@@ -62,13 +64,15 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [EagleScout](https://roiharel.github.io/MBRP/plots/kmls/Eaglescout.kmz)
 
-[Mlimafissi](https://roiharel.github.io/MBRP/plots/kmls/Mlimafissi.kmz)
-
 [Leikiji](https://roiharel.github.io/MBRP/plots/kmls/Leikiji.kmz)
 
 [LizardRock](https://roiharel.github.io/MBRP/plots/kmls/LizardRock.kmz)
 
 [LizardRock2](https://roiharel.github.io/MBRP/plots/kmls/LizardRock2.kmz)
+
+[Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/Mlimafisi.kmz)
+
+[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/Pylopn.kmz)
 
 [WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/WestMukenya.kmz)
 
