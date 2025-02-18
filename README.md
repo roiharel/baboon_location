@@ -18,19 +18,19 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 ## Monitoring tracking data
 
-[Field control table](https://roiharel.github.io/MBRP/plots/table_baboon_data_records.html)
+[Field control table](https://roiharel.github.io/MBRP/plots/htmls/table_baboon_data_records.html)
 
-[Map - day&night](https://roiharel.github.io/MBRP/plots/baboon_interactive_map.html)
+[Map - day&night](https://roiharel.github.io/MBRP/plots/htmls/baboon_interactive_map.html)
 
-[Cum. dist - possible mortality](https://roiharel.github.io/MBRP/plots/all_ind_distance_plot.html)
+[Cum. dist - possible mortality](https://roiharel.github.io/MBRP/plots/htmls/all_ind_distance_plot.html)
 
-[Data records](https://roiharel.github.io/MBRP/plots/baboon_data_records.html)
+[Data records](https://roiharel.github.io/MBRP/plots/htmls/baboon_data_records.html)
 
-[Battery trajectory](https://roiharel.github.io/MBRP/plots/baboon_data_batt_plot.html)
+[Battery trajectory](https://roiharel.github.io/MBRP/plots/htmls/baboon_data_batt_plot.html)
 
-[Map - night](https://roiharel.github.io/MBRP/plots/baboon_night_interactive_map.html)
+[Map - night](https://roiharel.github.io/MBRP/plots/htmls/baboon_night_interactive_map.html)
 
-[Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/prop_sleep_site_map.html)
+[Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/htmls/prop_sleep_site_map.html)
 
 ## Animations by group
 
