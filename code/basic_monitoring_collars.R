@@ -9,10 +9,9 @@
   library(dplyr)
   library(ggmap)
   library(maps)
-  library(moveVis)
+  
   library(sf)
   library(mapview)
-  library(webshot)
   library(leaflet)
   library(leaflet.minicharts)
   library(htmlwidgets)
@@ -28,16 +27,15 @@
   library(htmlwidgets)
   
   
-  
 }
 ## parameters - fill in details 
 {
   #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
   #ggmap::register_google(key = "KEY")
-  time_interval <- "1 mins"
+  time_interval <- "2 mins"
   time_interval_low_res <- "1 hours" #time interval for plots
   
-  date_start <- as.POSIXct("2024-03-01 00:00:00")
+  date_start <- as.POSIXct("2024-07-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
 }
@@ -46,9 +44,9 @@
   # load data and basic cleaning
   get_data <- function(date_start, time_interval, speed_threshold) {
     baboon_data <- movebank_download_study(3445611111, sensor_type_id = c("gps"), 
-                                                timestamp_start = date_start,
-                                                # individual_id = c(3487912671, 3487912662, 3487912663, 3487844492, 3508338112, 3938663627),
-                                                remove_movebank_outliers = TRUE) %>%
+                                           timestamp_start = date_start,
+                                           # individual_id = c(3487912671, 3487912662, 3487912663, 3487844492, 3508338112, 3938663627),
+                                           remove_movebank_outliers = TRUE) %>%
       filter(!st_is_empty(.))     # remove empty rows
     
     # calc speed azimuth and clean speed outliers
@@ -62,7 +60,7 @@
     
     baboon_data <- baboon_data %>%
       left_join(metadata %>% 
-                  select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
+                  dplyr::select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
       mt_filter_per_interval(unit = time_interval)
     
     baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
@@ -76,7 +74,7 @@
     
     # Join tibbles while keeping only matching columns
     combined_data <- bind_rows(
-      select(as.data.frame(baboon_data), matching_columns)
+      dplyr::select(as.data.frame(baboon_data), matching_columns)
     )
     
     # combined_data <- combined_data %>%
@@ -134,7 +132,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
 
 # Check if the directory exists, and create it if it doesn't
 # Define the path you want to create
-# path_plots <- paste0('~/plots/',as.Date(Sys.Date(), format = "%Y%m%d"))
+# path_plots <- paste0('~/plots/htmls/',as.Date(Sys.Date(), format = "%Y%m%d"))
 # if (!dir.exists(path_plots)) {
 #   dir.create(path_plots, recursive = TRUE)
 #   message("Directory created: ", path_plots)
@@ -154,20 +152,17 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
     unique()
   
   recent_data$tag_local_identifier <- factor(recent_data$tag_local_identifier, levels = ordered_levels)
-  recent_data$timestamp <- as.Date(recent_data$timestamp)
   
   records <- ggplot(recent_data, 
                     aes(x = timestamp, 
-                        y = tag_local_identifier,
+                        y = eobs_battery_voltage,
                         color = tag_local_identifier)) +
     geom_point() +
-    labs(x = "timestamp", y = "tagID") +
-    scale_x_date(date_breaks = "1 day", date_labels = "%Y-%m-%d")
-  
+    labs(x = "timestamp", y = "tagID") 
   interactive_plot <- ggplotly(records, tooltip = "text")
   # save plots
   
-  saveWidget(interactive_plot, paste0('plots/','/baboon_data_batt_plot.html')
+  saveWidget(interactive_plot, paste0('plots/htmls/','/baboon_data_batt_plot.html')
              , selfcontained = TRUE)
 }
 ## calculate median time difference, add group_id, and round it
@@ -189,9 +184,9 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   most_recent_rounded_time_diff <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    select(tag_local_identifier, 
-           last_rounded_time_diff = rounded_time_diff,  # Get the most recent rounded time diff
-           last_batt_value = min_battery)               # Get the most recent battery value
+    dplyr::select(tag_local_identifier, 
+                  last_rounded_time_diff = rounded_time_diff,  # Get the most recent rounded time diff
+                  last_batt_value = min_battery)               # Get the most recent battery value
   
   # daily_summary <- st_as_sf(daily_summary)  
   #most_recent_rounded_time_diff <- st_drop_geometry(most_recent_rounded_time_diff)
@@ -222,15 +217,15 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   interactive_plot <- ggplotly(daily_plot, tooltip = "text")
   
   # save plots
-  saveWidget(interactive_plot, paste0('plots/','/baboon_data_records.html'), selfcontained = TRUE)
-  webshot(paste0('plots/','/baboon_data_records.html'), file = paste('_baboon_data_records.png'), vwidth = 800, vheight = 600)
+  saveWidget(interactive_plot, paste0('plots/htmls/','/baboon_data_records.html'), selfcontained = TRUE)
+  
 }
 ## create a table of tags, group, last download date and batt level
 {
   last_rows_per_tag <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
+    dplyr::select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
     ungroup()   %>%
     st_drop_geometry() %>%
     rename(status = rounded_time_diff)
@@ -258,7 +253,7 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   )
   
   # Save the table as an HTML file
-  saveWidget(interactive_table, paste0('plots/','/table_baboon_data_records.html'), selfcontained = TRUE)
+  saveWidget(interactive_table, paste0('plots/htmls/','/table_baboon_data_records.html'), selfcontained = TRUE)
 }
 ## more interactive table - working on adding collar state culomn
 # {
@@ -307,7 +302,7 @@ source("code/sleep_site_mapbox.R")
 
 ## Run possible mortality plot
 source("code/check_possible_mortality.R")
-  
+
 
 
 
@@ -316,61 +311,4 @@ system("git add .")  # Add all changes
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
 system(paste('git commit -m "', commit_message, '"', sep = ""))
 system("git push origin main")  # Push to the main branch
-
-
-
-# Load necessary libraries
-library(move)
-library(moveVis)
-
-
-# Function to create movement plots 
-create_movement_plot <- function(data, plot_name, plot_names, date_start) {
-  # Create a moveVis frames object
-  # Filter data for the current plot
-  recent_data <- combined_data[data$timestamp > date_start,]
-  # create spatial frames with a OpenStreetMap watercolour map
-  plot_data <- recent_data[recent_data$group_id == plot_name, ]
-  
-  plot_data$timestamp <- as.POSIXct(plot_data$timestamp, format = "%Y-%m-%d %H:%M:%S", tz = "UTC")
-  
-  # Remove duplicates by keeping the first occurrence
-  plot_data <- plot_data[!duplicated(plot_data[, c("individual_local_identifier", "timestamp")]), ]
-  
-  # Assuming plot_data is your filtered data frame for each plot
-  move_data <- df2move(
-    plot_data,
-    proj = "+init=epsg:4326 +proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0",
-    x = "location.long", 
-    y = "location.lat", 
-    time = "timestamp", 
-    track_id = "individual_local_identifier"
-  )
-  
-  move_data <- moveStack(move_data, forceTz="UTC") 
-  
-  move_data <- align_move(m = move_data, res = 1, unit = "hours")
-  
-  frames <- frames_spatial(move_data, map_type = "topographic",
-                           path_colours = rainbow(length(unique(plot_data$individual_local_identifier))),
-                           path_legend  = FALSE
-  ) %>% 
-    add_northarrow() %>% 
-    add_scalebar()  %>% 
-    add_timestamps(type = "label") %>% 
-    add_progress()
-  
-  
-  animate_frames(frames, out_file = paste0(plot_name, ".mp4"))
-}
-
-# Assuming plot_names is a vector of unique plot names in your data
-plot_names <- unique(recent_data$group_id)
-
-# Loop through each plot name and create a video
-for (plot_name in plot_names) {
-  # Create the movement plot
-  create_movement_plot(move_data, plot_name, plot_names, date_start)
-}
-
 

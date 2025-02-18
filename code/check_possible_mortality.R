@@ -92,7 +92,7 @@ interactive_plot <- interactive_plot %>%
   )
 
 # Show the plot
-output_file <- paste0('plots/','/all_ind_distance_plot.html')
+output_file <- paste0('plots/htmls/','/all_ind_distance_plot.html')
 saveWidget(interactive_plot, file = output_file, selfcontained = TRUE)
 
 }
@@ -136,7 +136,7 @@ saveWidget(interactive_plot, file = output_file, selfcontained = TRUE)
 #   
 #   
 #   # Save the plot as an HTML file
-#   output_file <- paste0('plots/',"/group_", group, "_distance_plot.html")
+#   output_file <- paste0('plots/htmls/',"/group_", group, "_distance_plot.html")
 #   
 #   output_file <- paste0()
 #   saveWidget(group_plot, file = output_file, selfcontained = TRUE)

@@ -136,4 +136,4 @@ write.csv(clustered_data_clean, "clustered_data_clean.csv", row.names = FALSE)
 # Display the map
 leaflet_map <- create_leaflet_map_with_proportions(clustered_data)
 
-saveWidget(leaflet_map, paste0('plots/','/prop_sleep_site_map.html'), selfcontained = TRUE)
+saveWidget(leaflet_map, paste0('plots/htmls/','/prop_sleep_site_map.html'), selfcontained = TRUE)

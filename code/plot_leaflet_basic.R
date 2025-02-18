@@ -63,7 +63,7 @@ function(el, x) {
   # Print the map
   m
   # Save the map as an HTML file
-  saveWidget(m, paste0('plots/','/baboon_interactive_map.html'), selfcontained = TRUE)
+  saveWidget(m, paste0('plots/htmls/','/baboon_interactive_map.html'), selfcontained = TRUE)
   
 }
   ## plot night site interactive by individual
@@ -151,7 +151,7 @@ function(el, x) {
     m
     
     # Save the map as an HTML file
-    saveWidget(m, paste0('plots/','/baboon_night_interactive_map.html'), selfcontained = TRUE)
+    saveWidget(m, paste0('plots/htmls/','/baboon_night_interactive_map.html'), selfcontained = TRUE)
   }
   ## plot night site interactive by group
   {
@@ -243,7 +243,7 @@ function(el, x) {
     m
     
     # Save the map as an HTML file
-    saveWidget(m, paste0('plots/','/baboon_night_interactive_map.html'), selfcontained = TRUE)
+    saveWidget(m, paste0('plots/htmls/','/baboon_night_interactive_map.html'), selfcontained = TRUE)
   }
   ## plot map interactive - a specific variation between individuals - campsite
 #   {
@@ -306,6 +306,6 @@ function(el, x) {
 #     # Print the map
 #     m
 #     # Save the map as an HTML file
-#     saveWidget(m, paste0('plots/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_interactive_group_map.html'), selfcontained = TRUE)
+#     saveWidget(m, paste0('plots/htmls/',as.Date(Sys.Date(), format = "%Y%m%d"),'/baboon_interactive_group_map.html'), selfcontained = TRUE)
 #     
 #   }
