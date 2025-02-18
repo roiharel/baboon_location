@@ -58,6 +58,8 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [CampSite](https://roiharel.github.io/MBRP/plots/kmls/Campsite.kmz)
 
+[CampSite](https://github.com/roiharel/MBRP/plots/kmls/Campsite.kmz)
+
 [Cliff](https://roiharel.github.io/MBRP/plots/kmls/Cliff.kmz)
 
 [Clifford](https://roiharel.github.io/MBRP/plots/kmls/Clifford.kmz)
