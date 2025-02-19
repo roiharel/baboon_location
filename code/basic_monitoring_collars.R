@@ -32,12 +32,14 @@
 {
   #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
   #ggmap::register_google(key = "KEY")
-  time_interval <- "2 mins"
+  time_interval <- "1 mins"
   time_interval_low_res <- "1 hours" #time interval for plots
   
   date_start <- as.POSIXct("2024-07-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
+  possible_mortality <- c(10368) # Replace with actual names
+  
 }
 ## functions
 {
@@ -116,16 +118,29 @@
     # Return HTML string with the style
     return(paste("<span style='", style, "'>", tag, "</span>", sep = ""))
   }
-  mark_old_downloads <- function(last_date) {
+  # Modify the mark_status_change function
+  mark_status_change <- function(status, battery, tag) {
     style <- ""
     
-    # Check for date older than 21 days
-    if (last_date < Sys.Date() - mark_old_downloads) {
-      style <- paste(style, "color: orange; font-weight: bold;")  # Add blue text color
+    # Check for 'rest' status and battery
+    if (status == "Rest" && battery > set_units(3950, "mV")) {
+      style <- paste(style, "color: blue; font-weight: bold;")  # Add red text color
     }
+    
+    # Check for 'monitor' status and battery
+    if ((status == "Monitor" || status == "High") && battery < set_units(3700, "mV")) {
+      style <- paste(style, "color: blue; font-weight: bold;")  # Add blue text color
+    }
+    
+    # Check if the tag is in the possible mortality list
+    if (tag %in% possible_mortality) {
+      style <- paste(style, "color: red; text-decoration: line-through; font-weight: bold;")  # Red color and strikethrough for mortality
+    }
+    
     # Return HTML string with the style
-    return(paste("<span style='", style, "'>", last_date, "</span>", sep = ""))
+    return(paste("<span style='", style, "'>", tag, "</span>", sep = ""))
   }
+  
 }
 ## load data and basic cleaning
 combined_data <- get_data(date_start, time_interval, speed_threshold)
@@ -232,10 +247,13 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   
   last_rows_per_tag_html <- last_rows_per_tag
   # Create HTML formatted columns
-  last_rows_per_tag_html$tag_local_identifier <- mapply(mark_status_change, 
-                                                        last_rows_per_tag$status, 
-                                                        last_rows_per_tag$last_batt_value,
-                                                        last_rows_per_tag$tag_local_identifier)
+  # Apply the function using mapply
+  last_rows_per_tag_html$tag_local_identifier <- mapply(
+    mark_status_change, 
+    last_rows_per_tag$status, 
+    last_rows_per_tag$last_batt_value,
+    last_rows_per_tag$tag_local_identifier
+  )
   
   #last_rows_per_tag_html$date <- mapply(mark_old_downloads, last_rows_per_tag$date)
   
