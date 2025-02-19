@@ -34,11 +34,12 @@
   #ggmap::register_google(key = "KEY")
   time_interval <- "1 mins"
   time_interval_low_res <- "1 hours" #time interval for plots
+  days_window <- 4 # window in days - max distance 
   
   date_start <- as.POSIXct("2024-07-01 00:00:00")
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
-  possible_mortality <- c(10368) # Replace with actual names
+  possible_mortality <- c(10368,15484,14550,14542,6898) # Replace with actual names
   
 }
 ## functions
@@ -102,47 +103,34 @@
   }
   
   # Functions for coloring text in tables
-  mark_status_change <- function(status, battery, tag) {
+  mark_status_change <- function(status, battery, tag, max_last_days) {
     style <- ""
-    
-    # Check for 'rest' status and battery
-    if (status == "Rest" && battery > set_units(3950, "mV")) {
-      style <- paste(style, "color: red; font-weight: bold;")  # Add red text color
-    }
-    
-    # Check for 'monitor' status and battery
-    if ((status == "Monitor" || status == "High") && battery < set_units(3700, "mV")) {
-      style <- paste(style, "color: blue; font-weight: bold;")  # Add blue text color
-    }
-    
-    # Return HTML string with the style
-    return(paste("<span style='", style, "'>", tag, "</span>", sep = ""))
-  }
-  # Modify the mark_status_change function
-  mark_status_change <- function(status, battery, tag) {
-    style <- ""
-    
-    # Check for 'rest' status and battery
-    if (status == "Rest" && battery > set_units(3950, "mV")) {
-      style <- paste(style, "color: blue; font-weight: bold;")  # Add red text color
-    }
-    
-    # Check for 'monitor' status and battery
-    if ((status == "Monitor" || status == "High") && battery < set_units(3700, "mV")) {
-      style <- paste(style, "color: blue; font-weight: bold;")  # Add blue text color
-    }
     
     # Check if the tag is in the possible mortality list
     if (tag %in% possible_mortality) {
       style <- paste(style, "color: red; text-decoration: line-through; font-weight: bold;")  # Red color and strikethrough for mortality
+    } else {
+      # Check for max_last_days less than 0.5
+      if (max_last_days < 0.5) {
+        style <- paste(style, "color: red; font-weight: bold;")  # Red color for max_last_days < 0.5
+      } else {
+        # Check for 'rest' status and battery
+        if (status == "Rest" && battery > set_units(3950, "mV")) {
+          style <- paste(style, "color: blue; font-weight: bold;")  # Blue color for non-mortality
+        }
+        
+        # Check for 'monitor' status and battery
+        if ((status == "Monitor" || status == "High") && battery < set_units(3700, "mV")) {
+          style <- paste(style, "color: blue; font-weight: bold;")  # Blue color for non-mortality
+        }
+      }
     }
     
     # Return HTML string with the style
     return(paste("<span style='", style, "'>", tag, "</span>", sep = ""))
   }
-  
 }
-## load data and basic cleaning
+  ## load data and basic cleaning
 combined_data <- get_data(date_start, time_interval, speed_threshold)
 
 # Check if the directory exists, and create it if it doesn't
@@ -235,12 +223,106 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
   saveWidget(interactive_plot, paste0('plots/htmls/','/baboon_data_records.html'), selfcontained = TRUE)
   
 }
+## possible mortality check
+{
+  max_distance_summary <- recent_data %>%
+    arrange(tag_local_identifier, timestamp) %>%  # Ensure data is sorted by individual and time
+    mutate(date = as.Date(timestamp)) %>%         # Extract date
+    group_by(tag_local_identifier, date) %>%
+    mutate(
+      start_long = first(location.long),  # Get starting longitude for the day
+      start_lat = first(location.lat),    # Get starting latitude for the day
+      distance_from_start = distHaversine(
+        cbind(start_long, start_lat), 
+        cbind(location.long, location.lat)
+      ) / 1000  # Convert meters to kilometers
+    ) %>%
+    summarize(
+      max_distance_from_start = max(distance_from_start, na.rm = TRUE),  # Max distance from the start
+      .groups = "drop"
+    )
+  
+  max_distance_summary <- max_distance_summary %>%
+    arrange(tag_local_identifier, date) %>%  # Ensure the data is sorted
+    group_by(tag_local_identifier) %>%       # Group by identifier
+    mutate(
+      max_last_days = map_dbl(date, function(current_date) {
+        relevant_values <- max_distance_from_start[
+          date < current_date & date >= current_date - days_window
+        ]
+        if (length(relevant_values) > 0) {
+          max(relevant_values, na.rm = TRUE)
+        } else {
+          NA_real_  # Return NA if no relevant values
+        }
+      })
+    ) %>%
+    ungroup()  # Remove grouping
+  
+  
+  max_distance_summary <- max_distance_summary %>%
+    arrange(tag_local_identifier, date) %>%  # Ensure the data is sorted
+    group_by(tag_local_identifier) %>%       # Group by identifier
+    mutate(
+      max_last_days = map_dbl(date, function(current_date) {
+        relevant_values <- max_distance_from_start[
+          date < current_date & date >= current_date - days_window
+        ]
+        if (length(relevant_values) > 0) {
+          max(relevant_values, na.rm = TRUE)
+        } else {
+          NA_real_  # Return NA if no relevant values
+        }
+      })
+    ) %>%
+    ungroup()  # Remove grouping
+  
+  # Join the calculated max_last_days to daily_summary
+  daily_summary <- daily_summary %>%
+    left_join(
+      max_distance_summary %>% select(tag_local_identifier, date, max_last_days),
+      by = c("tag_local_identifier", "date")
+    )
+  
+  # Prepare the data for plotting
+  plot_data <- daily_summary %>%
+    filter(!is.na(max_last_days)) %>%  # Remove rows with missing distance values
+    select(tag_local_identifier, group_id, date, max_last_days)
+  
+  # Create the interactive plot
+  interactive_plot <- plot_ly(
+    data = plot_data,
+    x = ~date,
+    y = ~max_last_days,
+    color = ~tag_local_identifier,  # Different line per tag
+    type = 'scatter',
+    mode = 'lines+markers',
+    line = list(width = 2)
+  ) %>%
+    layout(
+      xaxis = list(title = "Date"),
+      yaxis = list(title = "Last Days Max Distance (km)"),
+      legend = list(title = list(text = "Tag"),
+                    itemclick = "toggleothers"  # Clicking a line shows only that line
+      )
+    )
+  
+  interactive_plot <- interactive_plot %>%
+    add_trace(
+      text = ~paste("Tag ID:", tag_local_identifier, "<br>Group ID:", group_id),
+      hoverinfo = "text"  # Customize hover text
+    )
+  
+  # Show the plot
+  output_file <- paste0('plots/htmls/','/all_ind_distance_plot.html')
+  saveWidget(interactive_plot, file = output_file, selfcontained = TRUE)
+}
 ## create a table of tags, group, last download date and batt level
 {
   last_rows_per_tag <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    dplyr::select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value  ) %>%  # Exclude specific columns
+    dplyr::select(tag_local_identifier , individual_local_identifier, group_id, date, rounded_time_diff , last_batt_value, max_last_days  ) %>%  # Exclude specific columns
     ungroup()   %>%
     st_drop_geometry() %>%
     rename(status = rounded_time_diff)
@@ -252,8 +334,11 @@ combined_data <- get_data(date_start, time_interval, speed_threshold)
     mark_status_change, 
     last_rows_per_tag$status, 
     last_rows_per_tag$last_batt_value,
-    last_rows_per_tag$tag_local_identifier
+    last_rows_per_tag$tag_local_identifier,
+    last_rows_per_tag$max_last_days  # Assuming this column exists in your data
   )
+  last_rows_per_tag_html <- last_rows_per_tag_html %>%
+    select(-max_last_days) 
   
   #last_rows_per_tag_html$date <- mapply(mark_old_downloads, last_rows_per_tag$date)
   
@@ -319,13 +404,13 @@ source("code/plot_leaflet_basic.R")
 source("code/sleep_site_mapbox.R")
 
 ## Run possible mortality plot
-source("code/check_possible_mortality.R")
+#source("code/check_possible_mortality.R")
 
 
 
 
 # System commands to commit and push changes
-system("git add .")  # Add all changes
+system("git add plots/")  # Add changes only from the plots directory
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
 system(paste('git commit -m "', commit_message, '"', sep = ""))
 system("git push origin main")  # Push to the main branch
