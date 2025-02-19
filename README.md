@@ -62,7 +62,7 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Clifford](https://roiharel.github.io/MBRP/plots/kmls/day/Clifford.kmz)
 
-[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/day/Eaglescout.kmz)
+[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/day/EagleScout.kmz)
 
 [Leikiji](https://roiharel.github.io/MBRP/plots/kmls/day/Leikiji.kmz)
 
@@ -72,7 +72,7 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
 
-[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/day/Pylopn.kmz)
+[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/day/Pylon.kmz)
 
 [WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
 
