@@ -13,7 +13,8 @@ library(RColorBrewer)
 pie_size <- 10 # set size of pie charts
 eps_thres <- 500 # DBscan parameter
 pnts_num <- 3 # DBscan parameter
-
+## functions
+{
 # Row per event
 cluster_positions <- function(data_filtered_night) {
   # Prepare the data and clean NA values
@@ -124,9 +125,9 @@ create_leaflet_map_with_proportions <- function(clustered_data) {
   # Return the leaflet map
   return(leaflet_map)
 }
+}
 
 clustered_data <- cluster_positions(data_filtered_night)
-
 clustered_data_clean <- simplify_cluster_table(clustered_data)
 
 # Save the result to a CSV file (optional, if required)

@@ -1,17 +1,17 @@
 ## plot map interactive
 {
   # Generate a list of unique identifiers
-  #unique_ids <- unique(combined_data$individual_local_identifier)
-  #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
+  #unique_ids <- unique(cleaned_data$individual_local_identifier)
+  #cleaned_data <- cleaned_data[cleaned_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
   
-  # combined_data <- combined_data %>%
+  # cleaned_data <- cleaned_data %>%
   #    filter(group_id %in% c("Mlimafisi", "Leikiji"))
   # names for legend
   
-  combined_data <- combined_data %>%
+  cleaned_data <- cleaned_data %>%
     filter(!is.na(group_id))
   
-  names_plot <- unique(sort(combined_data$plot_name))
+  names_plot <- unique(sort(cleaned_data$plot_name))
   # Create a color palette
   pallete <- colorFactor("Set1", domain = names_plot)
   
@@ -26,7 +26,7 @@
   
   
   for(id in names_plot) {
-    data_subset <- subset(combined_data, plot_name == id) 
+    data_subset <- subset(cleaned_data, plot_name == id) 
     
     m <- m %>%
       addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
@@ -70,7 +70,7 @@ function(el, x) {
   {
     # Assuming `data_rm_rest_group_members` has a column `timestamp` of class POSIXct
     
-    data_filtered_night <- combined_data %>%
+    data_filtered_night <- cleaned_data %>%
       mutate(date_val = as.Date(timestamp)) %>%
       filter(date_val > ymd(date_start)) %>%
       group_by(individual_local_identifier, date(timestamp)) %>%
@@ -157,7 +157,7 @@ function(el, x) {
   {
     # Assuming `data_rm_rest_group_members` has a column `timestamp` of class POSIXct
     
-    data_filtered_night <- combined_data %>%
+    data_filtered_night <- cleaned_data %>%
       mutate(date_val = as.Date(timestamp)) %>%
       filter(date_val > ymd(date_start)) %>%
       group_by(individual_local_identifier, date(timestamp)) %>%
@@ -248,15 +248,15 @@ function(el, x) {
   ## plot map interactive - a specific variation between individuals - campsite
 #   {
 #     # Generate a list of unique identifiers
-#     #unique_ids <- unique(combined_data$individual_local_identifier)
-#     #combined_data <- combined_data[combined_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
+#     #unique_ids <- unique(cleaned_data$individual_local_identifier)
+#     #cleaned_data <- cleaned_data[cleaned_data$timestamp > as.Date("2024-03-01 00:00:00 CET"),]
 #     
-#     combined_data_grp <- combined_data %>%
+#     cleaned_data_grp <- cleaned_data %>%
 #       filter(group_id %in% c("Campsite"))
 #     # names for legend
-#     names_plot <- unique(sort(combined_data$individual_local_identifier ))
+#     names_plot <- unique(sort(cleaned_data$individual_local_identifier ))
 #     # Create a color palette
-#     pallete <- colorFactor("BuGn", domain = unique(sort(combined_data$timestamp)))
+#     pallete <- colorFactor("BuGn", domain = unique(sort(cleaned_data$timestamp)))
 #     
 #     
 #     # Loop through each unique identifier to create a layer for each
@@ -269,7 +269,7 @@ function(el, x) {
 #     
 #     
 #     for(id in names_plot) {
-#       data_subset <- subset(combined_data_grp, individual_local_identifier == id) 
+#       data_subset <- subset(cleaned_data_grp, individual_local_identifier == id) 
 #       
 #       m <- m %>%
 #         addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
