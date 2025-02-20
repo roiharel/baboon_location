@@ -160,8 +160,8 @@ records <- ggplot(recent_data,
 interactive_plot <- ggplotly(records, tooltip = "text")
 # save plots
 
-#saveWidget(interactive_plot, paste0('plots/htmls#/','/baboon_data_batt_plot.html')
-#           , selfcontained = TRUE)
+saveWidget(interactive_plot, paste0('plots/htmls/','/baboon_data_batt_plot.html')
+           , selfcontained = FALSE)
 
 ## calculate median time difference, add group_id, and round it
 
@@ -353,10 +353,9 @@ saveWidget(interactive_table, paste0('plots/htmls/','/table_baboon_data_records.
 }
 
 ## plot maps
-cleaned_data <- get_data(baboon_data, time_interval_low, speed_threshold)
+cleaned_data <- arrange_data(baboon_data, time_interval_low, speed_threshold)
 ## plot basic maps prop sleep site
 source("code/plot_leaflet_basic.R")
-
 ## Run prop sleep site - pie chart
 source("code/sleep_site_mapbox.R")
 
