@@ -156,9 +156,7 @@ records <- ggplot(recent_data,
                       y = eobs_battery_voltage,
                       color = tag_local_identifier)) +
   geom_point() +
-  labs(x = "timestamp", y = "tagID") +
-  ylim(3600, 4000) # Set y-axis limits
-
+  labs(x = "timestamp", y = "tagID") 
 interactive_plot <- ggplotly(records, tooltip = "text")
 # save plots
 
