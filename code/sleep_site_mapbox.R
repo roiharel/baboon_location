@@ -99,7 +99,7 @@ create_leaflet_map_with_proportions <- function(clustered_data) {
   group_col <- colnames(cluster_by_group)[!colnames(cluster_by_group) %in% c("cluster", "lat", "lon", "row_sum")]
   
   # Define a color palette for pie charts
-  color_palette <- colorRampPalette(brewer.pal(8, "Set1"))(length(group_col))
+  color_palette <- colorRampPalette(brewer.pal(length(group_col), "Set3"))(length(group_col))
   
   # Create a leaflet map
   leaflet_map <- leaflet(cluster_by_group) %>%

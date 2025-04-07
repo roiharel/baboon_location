@@ -13,7 +13,7 @@
   
   names_plot <- unique(sort(cleaned_data$plot_name))
   # Create a color palette
-  pallete <- colorFactor("Set1", domain = names_plot)
+  pallete <- colorFactor("Set3", domain = names_plot)
   
   
   # Loop through each unique identifier to create a layer for each
@@ -93,7 +93,7 @@ function(el, x) {
     
     
     # Create a color palette
-    palette <- colorFactor("Set1", domain = names_plot)
+    palette <- colorFactor("Set3", domain = names_plot)
     
     
     # Create the basic Leaflet map
@@ -185,7 +185,7 @@ function(el, x) {
     
     
     # Create a color palette
-    palette <- colorFactor("Set1", domain = names_plot)
+    palette <- colorFactor("Set3", domain = names_plot)
     
     
     # Create the basic Leaflet map
