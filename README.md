@@ -72,7 +72,7 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
 
-[Pylopn](https://roiharel.github.io/MBRP/plots/kmls/day/Pylon.kmz)
+[Pylon](https://roiharel.github.io/MBRP/plots/kmls/day/Pylon.kmz)
 
 [WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
 
