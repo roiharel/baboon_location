@@ -26,8 +26,6 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Data records](https://roiharel.github.io/MBRP/plots/htmls/baboon_data_records.html)
 
-[Battery trajectory](https://roiharel.github.io/MBRP/plots/htmls/baboon_data_batt_plot.html)
-
 [Map - night](https://roiharel.github.io/MBRP/plots/htmls/baboon_night_interactive_map.html)
 
 [Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/htmls/prop_sleep_site_map.html)
