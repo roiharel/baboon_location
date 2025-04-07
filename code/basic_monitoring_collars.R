@@ -18,7 +18,7 @@ install_if_missing <- function(pkg) {
 
 # List of required packages
 packages <- c(
-  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan")
+  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan","xml2")
 
 # Apply the function to each package
 invisible(lapply(packages, install_if_missing))
