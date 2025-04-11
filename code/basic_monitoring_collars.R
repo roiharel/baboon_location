@@ -18,7 +18,7 @@ install_if_missing <- function(pkg) {
 
 # List of required packages
 packages <- c(
-  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan","xml2")
+  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan","xml2","tidyverse")
 
 # Apply the function to each package
 invisible(lapply(packages, install_if_missing))
@@ -276,7 +276,9 @@ daily_summary <- daily_summary %>%
   left_join(
     max_distance_summary %>% select(tag_local_identifier, date, max_last_days),
     by = c("tag_local_identifier", "date")
-  )
+  ) %>% 
+  drop_na()
+
 
 # Prepare the data for plotting
 plot_data <- daily_summary %>%
@@ -320,6 +322,7 @@ last_rows_per_tag <- daily_summary %>%
   ungroup()   %>%
   st_drop_geometry() %>%
   rename(status = rounded_time_diff)
+  
 
 last_rows_per_tag_html <- last_rows_per_tag
 # Create HTML formatted columns
