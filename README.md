@@ -76,4 +76,5 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
 
-
+## wheather comparison
+[MRC](https://roiharel.github.io/MBRP/plots/htmls/validate_weather_data.html)
