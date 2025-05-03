@@ -18,7 +18,7 @@ install_if_missing <- function(pkg) {
 
 # List of required packages
 packages <- c(
-  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan","xml2","tidyverse")
+  "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly","gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere","dbscan","xml2","tidyverse","arrow")
 
 # Apply the function to each package
 invisible(lapply(packages, install_if_missing))
@@ -31,13 +31,13 @@ lapply(packages, library, character.only = TRUE, lib.loc = user_lib)
 #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
 #ggmap::register_google(key = "KEY")
 
-setwd("C:\\Users\\meerkat\\Documents\\MBRP\\")
+setwd("C:\\Users\\user01\\Documents\\Github\\MBRP")
 
 time_interval_high <- "1 mins"
 time_interval_low <- "1 hours" #time interval for plots
 days_window <- 4 # window in days - max distance 
 
-date_start <- as.POSIXct("2024-07-01 00:00:00")
+date_start <- as.POSIXct("2025-01-01 00:00:00")
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368,15484,14550,14542,6898) # Replace with actual names
@@ -138,6 +138,11 @@ mark_status_change <- function(status, battery, tag, max_last_days) {
 ## load data and basic cleaning
 baboon_data <- download_data(date_start)
 cleaned_data <- arrange_data(baboon_data, time_interval_high, speed_threshold)
+
+
+write.csv(cleaned_data, "gps_v1.csv", row.names = FALSE)
+write_parquet(cleaned_data, "gps_v1.parquet")
+
 
 # ## plot data dist
 {
@@ -362,9 +367,10 @@ source("code/plot_leaflet_basic.R")
 ## Run prop sleep site - pie chart
 source("code/sleep_site_mapbox.R")
 
+system("python code/plot_kmls.py", wait = FALSE)
+
 # System commands to commit and push changes
 system("git add plots/")  # Add changes only from the plots directory
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
 system(paste('git commit -m "', commit_message, '"', sep = ""))
 system("git push origin main")  # Push to the main branch
-

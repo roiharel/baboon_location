@@ -12,10 +12,11 @@ library(lubridate)
 library(plotly)
 library(readr)
 library(ecmwfr)
-
+library(broom)
+library(tidyr)
 
 # Set file paths (change if necessary)
-setwd("C:/Users/user01/Downloads")
+#setwd("C:/Users/user01/Downloads")
 file_mrc <- "CR1000_mrc_FifteenMinute.xlsx"
 file_meter <- "MRC_weather(z6-28104)-Configuration 1-1744054176.082678.csv"
 sat <- "reanalysis-era5-single-levels-timeseries-sfcyulyozwu.csv"
@@ -179,8 +180,55 @@ plot_ly() %>%
 
 ```
 
+```{r weather_summary, include = FALSE}
 
-```{r weather1, include = FALSE}
+# Assuming df_meter is your data frame
+df_meter <- df_meter %>%
+  mutate(Date = as.Date(Timestamps),  # Extract date from timestamp
+         Hour = hour(Timestamps))     # Extract hour from timestamp
+
+# Define night time as hours from 18 (6 PM) to 6 (6 AM)
+df_night <- df_meter %>%
+  filter(Hour >= 18 | Hour < 6) %>%
+  group_by(Date) %>%
+  summarise(MaxWindSpeed = max(WindSpeed, na.rm = TRUE),
+            MeanWindSpeed = mean(WindSpeed, na.rm = TRUE),
+            MinWindSpeed = min(WindSpeed, na.rm = TRUE))
+
+# Function to calculate 95% CI
+calculate_ci <- function(x) {
+  mean_x <- mean(x, na.rm = TRUE)
+  se_x <- sd(x, na.rm = TRUE) / sqrt(length(x))
+  ci <- qt(0.975, df = length(x) - 1) * se_x
+  return(c(mean = mean_x, lower = mean_x - ci, upper = mean_x + ci))
+}
+
+# Calculate summary statistics with 95% CI for each measure
+summary_stats <- df_night %>%
+  summarise(
+    MaxWindSpeed_CI = list(calculate_ci(MaxWindSpeed)),
+    MeanWindSpeed_CI = list(calculate_ci(MeanWindSpeed)),
+    MinWindSpeed_CI = list(calculate_ci(MinWindSpeed))
+  ) %>%
+  unnest_wider(MaxWindSpeed_CI, names_sep = "_") %>%
+  unnest_wider(MeanWindSpeed_CI, names_sep = "_") %>%
+  unnest_wider(MinWindSpeed_CI, names_sep = "_")
+
+# Assuming df_night is your data frame with max, mean, and min wind speeds
+df_long <- df_night %>%
+  pivot_longer(cols = c(MaxWindSpeed, MeanWindSpeed, MinWindSpeed),
+               names_to = "Measurement",
+               values_to = "WindSpeed")
+
+# Create the violin plot
+ggplot(df_long, aes(x = Measurement, y = WindSpeed, fill = Measurement)) +
+  geom_violin(trim = FALSE) +
+  labs(x = "Summary stat - during nights", y = "Wind Speed (m/s)") +
+  scale_x_discrete(labels = c("Max", "Mean", "Min")) +
+  theme_minimal() +
+  theme(legend.position = "none",  # Remove legend
+        plot.title = element_blank()) 
+```
 # library(dplyr)
 # library(lubridate)
 # library(zoo)
