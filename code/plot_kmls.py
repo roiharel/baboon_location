@@ -25,20 +25,20 @@ import numpy as np
 import os
 
 # Parameter for the time window in minutes
-time_window_minutes = 60
-buffer_time = 2
+time_window_minutes = 30
+buffer_time = 5
 morning_hour = 9
 
 # Read the CSV file
 os.chdir('c:\\Users\\user01\\Documents\\Github\\MBRP')
 
 # Check if the file exists
-if not os.path.exists('gps_v1a.csv'):
+if not os.path.exists('gps_v1.csv'):
     raise FileNotFoundError("The file gps_v1.csv does not exist in the specified directory.")
 
 # Read the CSV file
 try:
-    data = pd.read_csv('gps_v1a.csv')
+    data = pd.read_csv('gps_v1.csv')
 except pd.errors.EmptyDataError:
     raise ValueError("The file gps_v1.csv is empty or has no columns to parse.")
 
@@ -131,7 +131,7 @@ for group_index, (group_id, group_data) in enumerate(grouped):
             end_time = start_time + timedelta(minutes=time_window_minutes)
                 
     # Save the KMZ file with the group_id as part of the filename
-    kml.savekmz(f"plots\\kmls\\est\\{group_id}.kmz")
+    kml.savekmz(f"plots\\kmls\\day\\{group_id}.kmz")
 
 ## Morning tracks
 # Filter data to include only tracks before noon
