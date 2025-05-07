@@ -172,6 +172,7 @@ plot_data_records <- function(cleaned_data) {
            time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
     group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
+              gps_fix_count = n(),
               min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   
               .groups = "drop") %>%
     mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(60, 120, 7200))) %>%
@@ -582,7 +583,7 @@ cleaned_data_low <- arrange_data(baboon_data, time_interval_low, speed_threshold
 
 ## save basic data
 write.csv(cleaned_data_high, "gps_v1.csv", row.names = FALSE)
-write_parquet(cleaned_data_high, "gps_v1.parquet")
+#write_parquet(cleaned_data_high, "gps_v1.parquet")
 
 ## plot data
 result <- plot_data_records(cleaned_data_high)
@@ -593,6 +594,21 @@ daily_summary <- result$daily_summary
 
 ## possible mortality check
 daily_summary <- plot_max_distance(cleaned_data, daily_summary, days_window)
+
+# Identify missing dates and filter for NA gps_fix_count
+missing_gps_data <- baboon_data_stat %>%
+  group_by(individual_local_identifier) %>%
+  complete(date = seq(min(date), max(date), by = "day")) %>%
+  filter(is.na(gps_fix_count)) %>%
+  ungroup()
+
+# Plot the data
+
+missing_gps_plot <- ggplotly(ggplot(missing_gps_data, aes(x = date, y = individual_local_identifier)) +
+                          geom_point() +
+                          labs(title = "Missing GPS Fix Count Data Points", x = "Date", y = "Individual ID") +
+                          theme_minimal())
+saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained = TRUE)
 
 ## make a table
 create_interactive_table(daily_summary)
