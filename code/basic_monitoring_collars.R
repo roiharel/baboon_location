@@ -21,7 +21,7 @@ packages <- c(
   "move2", "ggplot2", "lubridate", "dplyr",  "ggmap", "maps",  "sf", "mapview", "leaflet", 
   "leaflet.minicharts", "htmlwidgets",  "RColorBrewer", "units", "magrittr", "purrr", "plotly",
   "gridExtra", "png", "grid", "DT", "htmlwidgets","keyring","lwgeom","rmarkdown", "geosphere",
-  "dbscan","xml2","tidyverse","arrow")
+  "dbscan","xml2","tidyverse","arrow","data.table")
 
 # Apply the function to each package
 invisible(lapply(packages, install_if_missing))
@@ -573,7 +573,6 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   saveWidget(leaflet_map, 'plots/htmls/prop_sleep_site_map.html', selfcontained = TRUE)
 }
 
-
 }
   
 ## load data and basic cleaning
@@ -582,7 +581,7 @@ cleaned_data_high <- arrange_data(baboon_data, time_interval_high, speed_thresho
 cleaned_data_low <- arrange_data(baboon_data, time_interval_low, speed_threshold)
 
 ## save basic data
-write.csv(cleaned_data_high, "gps_v1.csv", row.names = FALSE)
+fwrite(cleaned_data_high, "data/gps_v1.csv", row.names = FALSE)
 #write_parquet(cleaned_data_high, "gps_v1.parquet")
 
 ## plot data
@@ -617,6 +616,8 @@ create_interactive_table(daily_summary)
 plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html')
 
 plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html')
+
+process_sleep_site_data(data_filtered_night)
 
 system("python code/plot_kmls.py", wait = FALSE)
 
