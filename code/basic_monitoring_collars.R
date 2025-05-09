@@ -566,7 +566,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   clustered_data_clean <- simplify_cluster_table(clustered_data)
   
   # Save the result to a CSV file
-  write.csv(clustered_data_clean, "clustered_data_clean.csv", row.names = FALSE)
+  write.csv(clustered_data_clean, "data/clustered_data_clean.csv", row.names = FALSE)
   
   # Display the map
   leaflet_map <- create_leaflet_map_with_proportions(clustered_data)
@@ -596,7 +596,7 @@ daily_summary <- result$daily_summary
 daily_summary <- plot_max_distance(cleaned_data, daily_summary, days_window)
 
 # Identify missing dates and filter for NA gps_fix_count
-missing_gps_data <- baboon_data_stat %>%
+missing_gps_data <- daily_summary %>%
   group_by(individual_local_identifier) %>%
   complete(date = seq(min(date), max(date), by = "day")) %>%
   filter(is.na(gps_fix_count)) %>%
