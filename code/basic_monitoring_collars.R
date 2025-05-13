@@ -44,7 +44,7 @@ date_end <- now()
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
-
+setwd("~/MBRP")
 }
 ## functions
 {
@@ -482,6 +482,7 @@ function(el, x) {
   
   # Save the map to the specified output file
   save_map(m, output_file)
+  return(data_filtered_night)
 }
 
 # Function to process and visualize sleep site data
@@ -615,7 +616,7 @@ create_interactive_table(daily_summary)
 ## plot basic maps prop sleep site
 plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html')
 
-plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html')
+data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html')
 
 process_sleep_site_data(data_filtered_night)
 
