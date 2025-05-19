@@ -44,7 +44,7 @@ date_end <- now()
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
-setwd("~/MBRP")
+setwd("C:\Users\meerkat\Documents\MBRP")
 }
 ## functions
 {
