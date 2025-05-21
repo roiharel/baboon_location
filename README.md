@@ -34,6 +34,8 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Map - missing data](https://roiharel.github.io/MBRP/plots/htmls/missing_gps_plot.html)
 
+[Sleeping sites transitions](https://roiharel.github.io/MBRP/plots/htmls/transitions_group_sleeping_sites_map.html)
+
 ## Animations by group
 
 [CampSite](https://roiharel.github.io/MBRP/plots/animations/Campsite.mp4)
