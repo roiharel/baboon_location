@@ -38,13 +38,13 @@ time_interval_high <- "1 mins"
 time_interval_low <- "1 hours" #time interval for plots
 days_window <- 4 # window in days - max distance 
 
-date_start <- as.POSIXct("2024-07-01 00:00:00")
+date_start <- as.POSIXct("2024-03-01 00:00:00")
 date_end <- now()
 
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
-setwd("C:\Users\meerkat\Documents\MBRP")
+setwd("C:\\Users\\meerkat\\Documents\\MBRP")
 }
 ## functions
 {
