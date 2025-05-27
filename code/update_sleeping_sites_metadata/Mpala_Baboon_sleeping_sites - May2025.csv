@@ -1,0 +1,45 @@
+"Cluster_no","avg_lat","avg_long","Is_Sleeping_site","Location_Name","Type","Property","Comments","Num_nights"
+1,0.4049038,36.8781,NA,"Small MuKenya",NA,"Mpala","",1110
+2,0.367129,36.92487,NA,"Clifford's Rock",NA,"Mpala","",1849
+3,0.4142018,36.87842,NA,"",NA,"","",428
+4,0.3580829,36.94522,NA,"Mlima Letet",NA,"Ol Jogi","",86
+5,0.3821383,36.94623,NA,"",NA,"Chololo","",6
+6,0.4071415,36.88261,NA,"",NA,"","",5
+7,0.3641193,36.92655,NA,"",NA,"","",134
+8,0.3079376,36.88726,NA,"Baboon Cliffs",NA,"Mpala","",641
+9,0.3179153,36.9011,NA,"Eagle Scout",NA,"Mpala","",1623
+10,0.2530115,36.91385,NA,"Kiota Trees",NA,"El Karama","",1220
+11,0.3008757,36.90824,NA,"Bridge",NA,"Mpala","",968
+12,0.2853384,36.90838,NA,"Campsite",NA,"Ol Jogi","",319
+13,0.3108615,36.90799,NA,"",NA,"","",1007
+14,0.3187999,36.91076,NA,"",NA,"","",70
+15,0.2842965,36.91146,NA,"",NA,"","",19
+16,0.2384864,36.91325,NA,"",NA,"El Karama","Near old cattle station",17
+17,0.2428154,36.91775,NA,"",NA,"","",10
+18,0.2806198,36.91765,NA,"Jessel Horse Camp",NA,"Ol Jogi","",16
+19,0.3045834,36.88967,NA,"",NA,"","",3
+20,0.3964911,36.86845,NA,"",NA,"","",132
+21,0.3343233,36.88697,NA,"South Weirs Cliffs",NA,"Mpala","",118
+22,0.3352638,36.91123,NA,"Hippo Trough",NA,"Mpala","Double check local name",86
+23,0.3230404,36.90454,NA,"",NA,"","",21
+24,0.3508974,36.92297,NA,"Lekiji Tree Crossing",NA,"Mpala","",98
+25,0.3435507,36.91347,NA,"",NA,"","",4
+26,0.464961,36.8919,NA,"",NA,"","",82
+27,0.5045523,36.87724,NA,"",NA,"Mpala","Single Ficus across from Il Motiok",50
+28,0.4634789,36.88861,NA,"",NA,"","",573
+29,0.4496486,36.88495,NA,"Nick's South Mlima",NA,"Soit Nyiro","Double check local name",1655
+30,0.4555212,36.87098,NA,"Pylon EK????",NA,"Mpala","",22
+31,0.4603024,36.88162,NA,"",NA,"","",38
+32,0.4291107,36.88338,NA,"Lizard Rock",NA,"Mpala","",1518
+33,0.4619799,36.88529,NA,"",NA,"","",3
+34,0.4327049,36.82215,NA,"",NA,"Ol Donyio Lemburu","Southern Mlima on Ivan's",24
+35,0.4566659,36.75935,NA,"Ol Donyio Lemburu",NA,"Ol Donyio Lemburu","",12
+36,0.4455017,36.85639,NA,"Pylon EK1006",NA,"Mpala","",635
+37,0.2988095,36.91225,NA,"",NA,"","",1076
+38,0.3103134,36.93524,NA,"",NA,"Ol Jogi","Southern Mlima on Ivan's",486
+39,0.2958882,36.9333,NA,"",NA,"Ol Jogi","West of Mluma Chuma",218
+40,0.3931691,36.87466,NA,"MuKenya South Cliffs",NA,"Mpala","",284
+41,0.4569293,36.88767,NA,"",NA,"","",3
+42,0.4540655,36.86769,NA,"",NA,"","",3
+43,0.3719737,36.92909,NA,"",NA,"Ol Jogi","Dead collar",8
+44,0.4275056,36.94366,NA,"",NA,"Lekorero","Mlima on Lekorero",7
