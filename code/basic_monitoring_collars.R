@@ -44,6 +44,19 @@ date_end <- now()
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
+
+pallete = c(
+  "#800000",  # Maroon - Mlimafisi
+  "#7FFF00",  # Chartreuse - Campsite
+  "#CD7F32",  # Bronze - BaboonCliffs
+  "#50C878",  # Emerald - EagleScout
+  "#C8A2C8",  # Lilac - Leikiji
+  "#B87333",  # Copper - Clifford
+  "#FF00FF",  # Magenta - WestMukenya
+  "#87CEFA",  # LapisSplinter - LizardRock2
+  "#26619C",  # Lapis - LizardRock
+  "#CCCCFF"  # Periwinkle - Pylon
+)
 setwd("C:\\Users\\meerkat\\Documents\\MBRP")
 }
 ## functions
@@ -386,13 +399,12 @@ save_map <- function(map, filename) {
 }
 
 # Main function to plot interactive map
-plot_interactive_map <- function(cleaned_data, output_file) {
+plot_interactive_map <- function(cleaned_data, output_file, palette) {
   cleaned_data <- cleaned_data %>%
     filter(!is.na(group_id))
   
   names_plot <- unique(sort(cleaned_data$plot_name))
-  palette <- colorFactor("Set3", domain = names_plot)
-  
+
   m <- create_base_map()
   
   for(id in names_plot) {
@@ -406,7 +418,7 @@ plot_interactive_map <- function(cleaned_data, output_file) {
   save_map(m, output_file)
 }
 
-plot_night_time_map <- function(cleaned_data, output_file) {
+plot_night_time_map <- function(cleaned_data, output_file, pallete) {
   # Filter the data for night time
   data_filtered_night <- cleaned_data %>%
     mutate(date_val = as.Date(timestamp)) %>%
@@ -427,8 +439,7 @@ plot_night_time_map <- function(cleaned_data, output_file) {
   
   # Prepare for plotting
   names_plot <- unique(sort(data_filtered_night$plot_name))
-  palette <- colorFactor("Set3", domain = names_plot)
-  
+
   # Create base map
   m <- leaflet() %>%
     addTiles(group = "OSM") %>%
@@ -528,7 +539,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   }
   
   # Function to create leaflet map with proportions
-  create_leaflet_map_with_proportions <- function(clustered_data) {
+  create_leaflet_map_with_proportions <- function(clustered_data , pallete) {
     cluster_by_group <- clustered_data %>%
       group_by(cluster) %>%
       summarise(
@@ -542,7 +553,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
       ungroup()
     
     group_col <- colnames(cluster_by_group)[!colnames(cluster_by_group) %in% c("cluster", "lat", "lon", "row_sum")]
-    color_palette <- colorRampPalette(brewer.pal(length(group_col), "Set3"))(length(group_col))
+
     
     leaflet_map <- leaflet(cluster_by_group) %>%
       addTiles(group = "OSM") %>%
@@ -555,7 +566,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
         chartdata = cluster_by_group %>% select(all_of(group_col)),
         width = pie_size * sqrt(cluster_by_group$row_sum / sqrt(max(cluster_by_group$row_sum))),
         transitionTime = 0,
-        colorPalette = color_palette
+        colorPalette = pallete
       ) %>%
       addLayersControl(baseGroups = c("OSM", "Topo", "Terrain"))
     
@@ -570,7 +581,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   write.csv(clustered_data_clean, "data/clustered_data_clean.csv", row.names = FALSE)
   
   # Display the map
-  leaflet_map <- create_leaflet_map_with_proportions(clustered_data)
+  leaflet_map <- create_leaflet_map_with_proportions(clustered_data, pallete)
   saveWidget(leaflet_map, 'plots/htmls/prop_sleep_site_map.html', selfcontained = TRUE)
 }
 
@@ -614,9 +625,9 @@ saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained 
 create_interactive_table(daily_summary)
 
 ## plot basic maps prop sleep site
-plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html')
+plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', pallete)
 
-data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html')
+data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', pallete)
 
 process_sleep_site_data(data_filtered_night)
 
