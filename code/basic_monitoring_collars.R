@@ -45,7 +45,7 @@ speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate un
 mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
 
-pallete = c(
+group_col = c(
   "#800000",  # Maroon - Mlimafisi
   "#7FFF00",  # Chartreuse - Campsite
   "#CD7F32",  # Bronze - BaboonCliffs
@@ -75,7 +75,7 @@ download_data <- function(date_start, date_end) {
 arrange_data <- function(baboon_data, time_interval, speed_threshold) {
     
   # calc speed azimuth and clean speed outliers
-  baboon_data %<>% mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
+  baboon_data %<>% dplyr::mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
   baboon_data$speed <- set_units(baboon_data$speed, "m/s")
   baboon_data <- baboon_data %>%
     filter(speed <= speed_threshold | is.na(speed))
@@ -107,8 +107,8 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   #   filter(tag_local_identifier != 6915)
   
   cleaned_data <- cleaned_data %>%
-    mutate(plot_name = paste(group_id, sep = "_")) %>%
-    filter(tag_local_identifier != 6915)
+    dplyr::mutate(plot_name = paste(group_id, sep = "_")) %>%
+    dplyr::filter(tag_local_identifier != 6915)
   
   # filter(plot_name != "Campsite_2020")
   
@@ -163,7 +163,7 @@ plot_data_records <- function(cleaned_data) {
   
   # Order levels
   ordered_levels <- cleaned_data %>%
-    arrange(group_id) %>%
+    dplyr::arrange(group_id) %>%
     pull(tag_local_identifier) %>%
     unique()
   
@@ -181,15 +181,15 @@ plot_data_records <- function(cleaned_data) {
   
   # Calculate daily summary
   daily_summary <- cleaned_data %>%
-    mutate(date = as.Date(timestamp),            
+    dplyr::mutate(date = as.Date(timestamp),            
            time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
-    group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
+    dplyr::group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               gps_fix_count = n(),
               min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   
               .groups = "drop") %>%
-    mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(60, 120, 7200))) %>%
-    mutate(rounded_time_diff = recode(rounded_time_diff, 
+    dplyr::mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(60, 120, 7200))) %>%
+    dplyr::mutate(rounded_time_diff = recode(rounded_time_diff, 
                                       "60" = "High",
                                       "120" = "Monitor",
                                       "7200" = "Rest")) 
@@ -207,8 +207,8 @@ plot_data_records <- function(cleaned_data) {
     left_join(most_recent_rounded_time_diff, by = "tag_local_identifier") 
   
   daily_summary <- daily_summary %>%
-    mutate(y_axis_label = interaction(group_id, tag_local_identifier, last_rounded_time_diff, last_batt_value, sep = " - ")) %>%
-    mutate(y_axis_label = factor(y_axis_label, 
+    dplyr::mutate(y_axis_label = interaction(group_id, tag_local_identifier, last_rounded_time_diff, last_batt_value, sep = " - ")) %>%
+    dplyr::mutate(y_axis_label = factor(y_axis_label, 
                                  levels = unique(y_axis_label[order(group_id, tag_local_identifier)]))) 
   
   # Create and save the second plot
@@ -231,13 +231,13 @@ plot_data_records <- function(cleaned_data) {
   return(list(cleaned_data = cleaned_data, daily_summary = daily_summary))
 }
 
-plot_max_distance <- function(cleaned_data, daily_summary, days_window) {
+plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_mapping) {
   # Calculate max distance summary
   max_distance_summary <- cleaned_data %>%
-    arrange(tag_local_identifier, timestamp) %>%
-    mutate(date = as.Date(timestamp)) %>%
-    group_by(tag_local_identifier, date) %>%
-    mutate(
+    dplyr::arrange(tag_local_identifier, timestamp) %>%
+    dplyr::mutate(date = as.Date(timestamp)) %>%
+    dplyr::group_by(tag_local_identifier, date) %>%
+    dplyr::mutate(
       start_long = first(location.long),
       start_lat = first(location.lat),
       distance_from_start = distHaversine(
@@ -245,16 +245,16 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window) {
         cbind(location.long, location.lat)
       ) / 1000
     ) %>%
-    summarize(
+    dplyr::summarize(
       max_distance_from_start = max(distance_from_start, na.rm = TRUE),
       .groups = "drop"
     )
   
   # Calculate max distance for the last days
   max_distance_summary <- max_distance_summary %>%
-    arrange(tag_local_identifier, date) %>%
-    group_by(tag_local_identifier) %>%
-    mutate(
+    dplyr::arrange(tag_local_identifier, date) %>%
+    dplyr::group_by(tag_local_identifier) %>%
+    dplyr::mutate(
       max_last_days = map_dbl(date, function(current_date) {
         relevant_values <- max_distance_from_start[
           date < current_date & date >= current_date - days_window
@@ -278,8 +278,8 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window) {
   
   # Prepare the data for plotting
   plot_data <- daily_summary %>%
-    filter(!is.na(max_last_days)) %>%
-    select(tag_local_identifier, group_id, date, max_last_days)
+    dplyr::filter(!is.na(daily_summary$max_last_days)) %>%
+    dplyr::select(tag_local_identifier, group_id, date, max_last_days)
   
   # Create the interactive plot
   interactive_plot <- plot_ly(
@@ -287,6 +287,7 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window) {
     x = ~date,
     y = ~max_last_days,
     color = ~tag_local_identifier,
+    colors = unname(color_mapping[plot_data$group_id]),  # Use the custom color palette
     type = 'scatter',
     mode = 'lines+markers',
     line = list(width = 2)
@@ -356,16 +357,6 @@ create_base_map <- function() {
     addProviderTiles(providers$Esri.WorldImagery, group = "Terrain", options = providerTileOptions(noWrap = TRUE))
 }
 
-# Function to add circle markers to the map
-add_circle_markers <- function(map, data, palette, group_name) {
-  map %>%
-    addCircleMarkers(data = data, ~location.long, ~location.lat, 
-                     color = ~palette(group_name), 
-                     opacity = .4, fillOpacity = .4,
-                     radius = .5, 
-                     group = as.character(group_name))
-}
-
 # Function to add layer control to the map
 add_layer_control <- function(map, overlay_groups) {
   map %>%
@@ -399,7 +390,7 @@ save_map <- function(map, filename) {
 }
 
 # Main function to plot interactive map
-plot_interactive_map <- function(cleaned_data, output_file, palette) {
+plot_interactive_map <- function(cleaned_data, output_file, color_mapping) {
   cleaned_data <- cleaned_data %>%
     filter(!is.na(group_id))
   
@@ -409,7 +400,12 @@ plot_interactive_map <- function(cleaned_data, output_file, palette) {
   
   for(id in names_plot) {
     data_subset <- subset(cleaned_data, plot_name == id)
-    m <- add_circle_markers(m, data_subset, palette, id)
+    m <- m %>%
+      addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
+                       color = unname(color_mapping[data_subset$plot_name]), 
+                       opacity = .4, fillOpacity = .4,
+                       radius = .5, 
+                       group = as.character(id))
   }
   
   m <- render_map_with_click(m)
@@ -418,12 +414,12 @@ plot_interactive_map <- function(cleaned_data, output_file, palette) {
   save_map(m, output_file)
 }
 
-plot_night_time_map <- function(cleaned_data, output_file, pallete) {
+plot_night_time_map <- function(cleaned_data, output_file, color_mapping) {
   # Filter the data for night time
   data_filtered_night <- cleaned_data %>%
-    mutate(date_val = as.Date(timestamp)) %>%
-    filter(date_val > ymd(date_start)) %>%
-    group_by(individual_local_identifier, date(timestamp)) %>%
+    dplyr::mutate(date_val = as.Date(timestamp)) %>%
+    dplyr::filter(date_val > ymd(date_start)) %>%
+    dplyr::group_by(individual_local_identifier, date(timestamp)) %>%
     slice(n()) %>%
     ungroup() %>%
     filter(format(timestamp, "%H:%M") >= "15:50")
@@ -431,14 +427,14 @@ plot_night_time_map <- function(cleaned_data, output_file, pallete) {
   # Calculate days ago
   most_recent_timestamp <- max(data_filtered_night$timestamp, na.rm = TRUE)
   data_filtered_night <- data_filtered_night %>%
-    mutate(days_ago = as.numeric(difftime(most_recent_timestamp, timestamp, units = "days")))
+    dplyr::mutate(days_ago = as.numeric(difftime(most_recent_timestamp, timestamp, units = "days")))
   
   # Filter out rows with missing group_id
   data_filtered_night <- data_filtered_night %>%
     filter(!is.na(group_id))
   
   # Prepare for plotting
-  names_plot <- unique(sort(data_filtered_night$plot_name))
+  names_plot <- unique(sort(data_filtered_night$group_id))
 
   # Create base map
   m <- leaflet() %>%
@@ -450,10 +446,11 @@ plot_night_time_map <- function(cleaned_data, output_file, pallete) {
   
   for(id in names_plot) {
     data_subset <- data_filtered_night %>%
-      filter(plot_name == id) %>%
+      filter(group_id == id) %>%
       group_by(individual_local_identifier, day = date(timestamp)) %>%
       summarise(location.lat = first(location.lat), 
                 location.long = first(location.long),
+                group_id = first(group_id),
                 date_label = paste(first(format(timestamp, "%Y-%m-%d")), first(individual_local_identifier), sep = " "),
                 #          opacity = opacity,# Format the date as desired
                 .groups = 'drop')
@@ -461,7 +458,7 @@ plot_night_time_map <- function(cleaned_data, output_file, pallete) {
     if (nrow(data_subset) > 0) {
       m <- m %>%
         addCircleMarkers(data = data_subset, ~location.long, ~location.lat, 
-                         color = ~palette(id), 
+                         color = unname(color_mapping[id]), 
                          #                 opacity = 0, fillOpacity = ~opacity,
                          radius = 6, 
                          group = as.character(id), 
@@ -497,7 +494,7 @@ function(el, x) {
 }
 
 # Function to process and visualize sleep site data
-process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thres = 500, pnts_num = 3) {
+process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thres = 500, pnts_num = 3, color_mapping) {
   
   # Function to cluster positions
   cluster_positions <- function(data_filtered_night) {
@@ -519,7 +516,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   # Function to simplify cluster table
   simplify_cluster_table <- function(clustered_data) {
     clustered_data_clean <- clustered_data %>%
-      group_by(cluster) %>%
+      dplyr::group_by(cluster) %>%
       summarise(
         group_ids_combined = paste(unique(group_id), collapse = ", "),
         centroid_lat = mean(lat),
@@ -531,15 +528,15 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
         lat = centroid_lat,
         lon = centroid_lon
       ) %>%
-      mutate(group_id_serial = as.numeric(as.factor(group_id))) %>%
+      dplyr::mutate(group_id_serial = as.numeric(as.factor(group_id))) %>%
       group_by(cluster) %>%
-      mutate(group_ids_in_cluster = paste(unique(group_id), collapse = ", ")) %>%
+      dplyr::mutate(group_ids_in_cluster = paste(unique(group_id), collapse = ", ")) %>%
       ungroup()
     return(clustered_data_clean)
   }
   
   # Function to create leaflet map with proportions
-  create_leaflet_map_with_proportions <- function(clustered_data , pallete) {
+  create_leaflet_map_with_proportions <- function(clustered_data , color_mapping) {
     cluster_by_group <- clustered_data %>%
       group_by(cluster) %>%
       summarise(
@@ -549,11 +546,11 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
       ) %>%
       unnest_wider(group_counts) %>%
       rowwise() %>%
-      mutate(row_sum = sum(c_across(-c(cluster, lat, lon)), na.rm = TRUE)) %>%
+      dplyr::mutate(row_sum = sum(c_across(-c(cluster, lat, lon)), na.rm = TRUE)) %>%
       ungroup()
     
-    group_col <- colnames(cluster_by_group)[!colnames(cluster_by_group) %in% c("cluster", "lat", "lon", "row_sum")]
-
+    col <- colnames(cluster_by_group)[!colnames(cluster_by_group) %in% c("cluster", "lat", "lon", "row_sum")]
+    
     
     leaflet_map <- leaflet(cluster_by_group) %>%
       addTiles(group = "OSM") %>%
@@ -563,10 +560,10 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
         lng = cluster_by_group$lon,
         lat = cluster_by_group$lat,
         type = "pie",
-        chartdata = cluster_by_group %>% select(all_of(group_col)),
+        chartdata = cluster_by_group %>% select(all_of(col)),
         width = pie_size * sqrt(cluster_by_group$row_sum / sqrt(max(cluster_by_group$row_sum))),
         transitionTime = 0,
-        colorPalette = pallete
+        colorPalette = unname(color_mapping)
       ) %>%
       addLayersControl(baseGroups = c("OSM", "Topo", "Terrain"))
     
@@ -581,7 +578,7 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
   write.csv(clustered_data_clean, "data/clustered_data_clean.csv", row.names = FALSE)
   
   # Display the map
-  leaflet_map <- create_leaflet_map_with_proportions(clustered_data, pallete)
+  leaflet_map <- create_leaflet_map_with_proportions(clustered_data, color_mapping)
   saveWidget(leaflet_map, 'plots/htmls/prop_sleep_site_map.html', selfcontained = TRUE)
 }
 
@@ -591,6 +588,10 @@ process_sleep_site_data <- function(data_filtered_night, pie_size = 10, eps_thre
 baboon_data <- download_data(date_start, date_end)
 cleaned_data_high <- arrange_data(baboon_data, time_interval_high, speed_threshold)
 cleaned_data_low <- arrange_data(baboon_data, time_interval_low, speed_threshold)
+
+# Create a named vector for mapping plot names to colors
+plot_names <- unique(cleaned_data_low$plot_name)
+color_mapping <- setNames(group_col[1:length(plot_names)], plot_names)
 
 ## save basic data
 fwrite(cleaned_data_high, "data/gps_v1.csv", row.names = FALSE)
@@ -604,7 +605,7 @@ cleaned_data <- result$cleaned_data
 daily_summary <- result$daily_summary
 
 ## possible mortality check
-daily_summary <- plot_max_distance(cleaned_data, daily_summary, days_window)
+daily_summary <- plot_max_distance(cleaned_data, daily_summary, days_window, color_mapping)
 
 # Identify missing dates and filter for NA gps_fix_count
 missing_gps_data <- daily_summary %>%
@@ -625,11 +626,11 @@ saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained 
 create_interactive_table(daily_summary)
 
 ## plot basic maps prop sleep site
-plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', pallete)
+plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', color_mapping)
 
-data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', pallete)
+data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', color_mapping)
 
-process_sleep_site_data(data_filtered_night)
+process_sleep_site_data(data_filtered_night, color_mapping)
 
 system("python code/plot_kmls.py", wait = FALSE)
 

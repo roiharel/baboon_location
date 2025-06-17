@@ -63,9 +63,23 @@ transition_props <- transition_counts %>%
   dplyr::ungroup()
 
 # Assign color per individual
+
+
+group_col = c(
+  "#800000",  # Maroon - Mlimafisi
+  "#7FFF00",  # Chartreuse - Campsite
+  "#CD7F32",  # Bronze - BaboonCliffs
+  "#50C878",  # Emerald - EagleScout
+  "#C8A2C8",  # Lilac - Leikiji
+  "#B87333",  # Copper - Clifford
+  "#FF00FF",  # Magenta - WestMukenya
+  "#87CEFA",  # LapisSplinter - LizardRock2
+  "#26619C",  # Lapis - LizardRock
+  "#CCCCFF"  # Periwinkle - Pylon
+)
+
 group_ids <- unique(clustered_data$group_id)
-group_base_colors <- RColorBrewer::brewer.pal(min(8, length(group_ids)), "Dark2")
-group_palettes <- setNames(group_base_colors[1:length(group_ids)], group_ids)
+group_palettes <- setNames(group_col[1:length(group_ids)], group_ids)
 
 # Step 2: Assign individuals shades within each group
 individual_colors <- clustered_data %>%
@@ -132,13 +146,12 @@ m <- m %>%
   )
 
 # Show map
-saveWidget(m, file = "transitions_sleeping_sites_map_satellite.html", selfcontained = TRUE)
+saveWidget(m, file = "plots/htmls/transitions_sleeping_sites_map.html", selfcontained = TRUE)
 
 #################  GROUP LEVEL - CURVED LINES TRANSITIONS 
 
 
 group_names <- unique(group_transitions$group_id)
-
 group_transitions <- transitions %>%
   dplyr::group_by(group_id, from = cluster, to = next_cluster) %>%
   dplyr::summarise(
@@ -189,8 +202,6 @@ m <- leaflet() %>%
   setView(lng = mean(clustered_data$lon), lat = mean(clustered_data$lat), zoom = 12)
 
 # Plot curved transitions by group
-group_colors <- colorFactor("Dark2", domain = group_names)
-
 for (i in seq_len(nrow(group_transitions))) {
   row <- group_transitions[i, ]
   
@@ -206,7 +217,7 @@ for (i in seq_len(nrow(group_transitions))) {
     lng = curve_coords$lon,
     lat = curve_coords$lat,
     weight = row$weight_no_self,
-    color = group_colors(row$group_id),
+    color = unname(group_palettes[row$group_id]),
     opacity = 0.8,
     label = paste0(
       row$group_id, ": ",
@@ -236,5 +247,5 @@ m <- m %>%
     options = layersControlOptions(collapsed = FALSE)
   )
 
-saveWidget(m, file = "transitions_group_sleeping_sites_map_satellite.html", selfcontained = TRUE)
+saveWidget(m, file = "plots/htmls/transitions_sleeping_sites_map.html", selfcontained = TRUE)
 
