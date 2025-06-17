@@ -630,7 +630,7 @@ plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html'
 
 data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', color_mapping)
 
-process_sleep_site_data(data_filtered_night, color_mapping)
+#process_sleep_site_data(data_filtered_night, color_mapping)
 
 system("python code/plot_kmls.py", wait = FALSE)
 
