@@ -196,3 +196,45 @@ for group_index, (group_id, group_data) in enumerate(grouped):
                 
     # Save the KMZ file with the group_id as part of the filename
  ###   kml.savekmz(f"morning\\{group_id}.kmz")
+
+ # Get the current date and calculate the start of the last week
+current_date = datetime.now().astimezone()  # Make current_date timezone-aware
+last_week_start = current_date - timedelta(days=7)
+
+# Filter data for the last week
+data_last_week = data[(data['timestamp'] >= last_week_start) & (data['timestamp'] <= current_date)]
+
+# Group the data by 'group_id'
+grouped = data_last_week.groupby('group_id')
+
+# Create a KMZ file for the last week
+kml = simplekml.Kml()
+
+# Iterate over each group
+for group_id, group_data in grouped:
+    # Get the color for the group from base_colors
+    group_color = base_colors.get(group_id, "#000000")  # Default to black if not found
+
+    # Iterate over each individual in the group
+    for individual_id, individual_data in group_data.groupby('individual_local_identifier'):
+        # Create a folder for each individual
+        folder = kml.newfolder(name=f"{individual_id} ({tag_local_identifier})")
+        folder.visibility = 0  # Set folder visibility to 0 (hidden)
+
+        tag_local_identifier = individual_data['tag_local_identifier'].iloc[0] if not individual_data['tag_local_identifier'].empty else 'Unknown'
+        # Create a multiline for the individual
+        line = folder.newlinestring(name=f"{individual_id} ({tag_local_identifier}) - Last Week")
+        line.coords = list(zip(individual_data['location.long'], individual_data['location.lat']))
+
+        # Set the color using the group color with alpha
+        kml_color = 'b2' + group_color[1:]  # Add alpha to hex color
+        line.style.linestyle.color = kml_color
+        line.style.linestyle.width = 5  # Set line width
+
+        # Set the timespan for the multiline
+        line.timespan.begin = individual_data['timestamp'].min().strftime('%Y-%m-%dT%H:%M:%SZ')
+        line.timespan.end = individual_data['timestamp'].max().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+# Save the KMZ file for the last week
+kml.savekmz("plots\\kmls\\last_week.kmz")
+print("KMZ file for the last week saved successfully.")
