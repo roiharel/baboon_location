@@ -60,7 +60,9 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [All groups](https://roiharel.github.io/MBRP/plots/animations/MBRP_all_groups_Jan2025.mp4)
 
-## kmls by group
+## kml - 1. last week, 2. by group - all time
+
+[Last week] (https://roiharel.github.io/MBRP/plots/kmls/last_week.kmz)
 
 [CampSite](https://roiharel.github.io/MBRP/plots/kmls/day/Campsite.kmz)
 
