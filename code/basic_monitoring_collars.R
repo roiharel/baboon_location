@@ -632,7 +632,7 @@ data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon
 
 #process_sleep_site_data(data_filtered_night, color_mapping)
 
-system("python code/plot_kmls.py", wait = FALSE)
+system("python code/plot_kmls.py", wait = TRUE)
 
 # System commands to commit and push changes
 system("git add plots/")  # Add changes only from the plots directory
