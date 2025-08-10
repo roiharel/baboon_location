@@ -30,7 +30,11 @@ base_colors = {
     "Magenta": "#FF00FF",       # Magenta
     "LapisSplinter": "#87CEFA", # LapisSplinter
     "Lapis": "#26619C",         # Lapis
-    "Periwinkle": "#CCCCFF"     # Periwinkle
+    "Periwinkle": "#CCCCFF",    # Periwinkle
+    "PhantomWest": "#FF0000",   # Red
+    "Teal": "#008080",          # Teal
+    "sneakySilver": "#C0C0C0",  # Silver
+    "Purple": "#800080"         # Purple
 }
 
 # Function to generate a gradient of colors

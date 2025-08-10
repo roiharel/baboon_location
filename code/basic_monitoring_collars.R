@@ -46,17 +46,22 @@ mark_old_downloads <- 21 # 21 days
 possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
 
 group_col = c(
-  "#800000",  # Maroon - Mlimafisi
-  "#7FFF00",  # Chartreuse - Campsite
-  "#CD7F32",  # Bronze - BaboonCliffs
-  "#50C878",  # Emerald - EagleScout
-  "#C8A2C8",  # Lilac - Leikiji
-  "#B87333",  # Copper - Clifford
-  "#FF00FF",  # Magenta - WestMukenya
-  "#87CEFA",  # LapisSplinter - LizardRock2
-  "#26619C",  # Lapis - LizardRock
-  "#CCCCFF"  # Periwinkle - Pylon
+  "#800000",   # Maroon - Mlimafisi
+  "#7FFF00",   # Chartreuse - Campsite
+  "#CD7F32",   # Bronze - BaboonCliffs
+  "#50C878",   # Emerald - EagleScout
+  "#C8A2C8",   # Lilac - Leikiji
+  "#B87333",   # Copper - Clifford
+  "#FF00FF",   # Magenta - WestMukenya
+  "#87CEFA",   # LapisSplinter - LizardRock2
+  "#26619C",   # Lapis - LizardRock
+  "#CCCCFF",   # Periwinkle - Pylon
+  "#FF0000",   # Red - PhantomWest
+  "#008080",   # Teal - Teal
+  "#C0C0C0",   # Silver - sneakySilver
+  "#800080"    # Purple - Purple
 )
+
 setwd("C:\\Users\\meerkat\\Documents\\MBRP")
 }
 ## functions
