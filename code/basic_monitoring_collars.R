@@ -620,6 +620,7 @@ color_mapping <- setNames(group_col[1:length(plot_names)], plot_names)
 
 ## save basic data
 fwrite(cleaned_data_high, "data/gps_v1.csv", row.names = FALSE)
+fwrite(cleaned_data_high, "data/gps_v1_1min.RDS", row.names = FALSE)
 saveRDS(cleaned_data_low, "data/gps_v1_1hour.RDS")
 #write_parquet(cleaned_data_high, "gps_v1.parquet")
 
