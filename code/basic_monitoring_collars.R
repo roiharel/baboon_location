@@ -38,12 +38,12 @@ time_interval_high <- "1 mins"
 time_interval_low <- "1 hours" #time interval for plots
 days_window <- 4 # window in days - max distance 
 
-date_start <- as.POSIXct("2024-03-01 00:00:00")
-date_end <- now()
+date_start <- as.POSIXct("2024-02-28 03:00:00")
+date_end <- now(tz = "CET" )
 
 speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
 mark_old_downloads <- 21 # 21 days
-possible_mortality <- c(10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
+possible_mortality <- c(059292, 059293 , 059294, 059295,  059296, 10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
 
 group_col = c(
   "#800000",   # Maroon - Mlimafisi
@@ -59,8 +59,12 @@ group_col = c(
   "#FF0000",   # Red - PhantomWest
   "#008080",   # Teal - Teal
   "#C0C0C0",   # Silver - sneakySilver
-  "#800080"    # Purple - Purple
+  "#800080",   # Purple - Purple
+  "#E0115F",   # Ruby - RubyRunners
+  "#008000",   # Green - Ivan's
+  "#00A36C"    # Jade - Ol Jogi School
 )
+
 
 setwd("C:\\Users\\meerkat\\Documents\\MBRP")
 }
@@ -90,7 +94,7 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   
   baboon_data <- baboon_data %>%
     left_join(metadata %>% 
-                dplyr::select(individual_local_identifier, tag_local_identifier, group_id, sex), by = c("individual_local_identifier" = "individual_local_identifier"))  %>%
+                dplyr::select(deployment_id, individual_local_identifier, tag_local_identifier, group_id, sex), by = c("deployment_id" = "deployment_id"))  %>%
     mt_filter_per_interval(unit = time_interval)
   
   baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
@@ -317,12 +321,27 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_ma
 
 create_interactive_table <- function(daily_summary) {
   # Create a table of tags, group, last download date, and battery level
+  # Get last day per tag
   last_rows_per_tag <- daily_summary %>%
     group_by(tag_local_identifier) %>%
     filter(date == max(date)) %>%
-    dplyr::select(tag_local_identifier, individual_local_identifier, group_id, date, rounded_time_diff, last_batt_value, max_last_days) %>%
+    select(tag_local_identifier, individual_local_identifier, group_id, date, rounded_time_diff, last_batt_value, max_last_days) %>%
     ungroup() %>%
     rename(status = rounded_time_diff)
+  
+  # Get first day per tag
+  first_days <- daily_summary %>%
+    group_by(tag_local_identifier) %>%
+    summarise(first_day = min(date), .groups = "drop")
+  
+  # Merge first day into last_rows_per_tag
+  last_rows_per_tag <- last_rows_per_tag %>%
+    left_join(first_days, by = "tag_local_identifier")
+  
+  last_rows_per_tag <- last_rows_per_tag %>%
+    rename(last_day = date) %>%
+    select(tag_local_identifier, individual_local_identifier, group_id, first_day, last_day, everything())
+  
   
   # Prepare HTML formatted columns
   last_rows_per_tag_html <- last_rows_per_tag
@@ -333,13 +352,14 @@ create_interactive_table <- function(daily_summary) {
     last_rows_per_tag$tag_local_identifier,
     last_rows_per_tag$max_last_days
   )
-  last_rows_per_tag_html <- last_rows_per_tag_html %>%
-    select(-max_last_days)
+  #last_rows_per_tag_html <- last_rows_per_tag_html %>%
+  #  select(-max_last_days)
   
   # Create the interactive table
   interactive_table <- datatable(
     last_rows_per_tag_html,
     escape = FALSE,
+    rownames = FALSE,
     options = list(
       paging = TRUE,
       searching = TRUE,
@@ -419,7 +439,7 @@ plot_interactive_map <- function(cleaned_data, output_file, color_mapping) {
   save_map(m, output_file)
 }
 
-plot_night_time_map <- function(cleaned_data, output_file, color_mapping) {
+plot_night_time_map <- function(cleaned_data, output_file, color_mapping, date_start) {
   # Filter the data for night time
   data_filtered_night <- cleaned_data %>%
     dplyr::mutate(date_val = as.Date(timestamp)) %>%
@@ -600,6 +620,7 @@ color_mapping <- setNames(group_col[1:length(plot_names)], plot_names)
 
 ## save basic data
 fwrite(cleaned_data_high, "data/gps_v1.csv", row.names = FALSE)
+saveRDS(cleaned_data_low, "data/gps_v1_1hour.RDS")
 #write_parquet(cleaned_data_high, "gps_v1.parquet")
 
 ## plot data
@@ -633,7 +654,7 @@ create_interactive_table(daily_summary)
 ## plot basic maps prop sleep site
 plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', color_mapping)
 
-data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', color_mapping)
+data_filtered_night <- plot_night_time_map(cleaned_data_low, 'plots/htmls/baboon_night_interactive_map.html', color_mapping, date_start)
 
 #process_sleep_site_data(data_filtered_night, color_mapping)
 
