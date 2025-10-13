@@ -34,7 +34,9 @@ base_colors = {
     "PhantomWest": "#FF0000",   # Red
     "Teal": "#008080",          # Teal
     "sneakySilver": "#C0C0C0",  # Silver
-    "Purple": "#800080"         # Purple
+    "Purple": "#800080",         # Purple
+    "Green": "#008000",         # Green
+    "Jade": "#00A86B"
 }
 
 # Function to generate a gradient of colors

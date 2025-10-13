@@ -56,6 +56,7 @@
 {
   #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
   #ggmap::register_google(key = "KEY")
+  study_id <- 3445611111
   time_interval_high <- "1 mins"
   time_interval_low <- "1 hours" #time interval for plots
   days_window <- 4 # window in days - max distance
@@ -88,46 +89,57 @@
 }
 ## functions
 source("code\\functions\\prep_gps_movebank.R")
-## functions
-source("code\\functions\\prep_gps_movebank.R")
 source("code\\functions\\create_interactive_table.R")
 source("code\\functions\\plot_interactive_map.R")
 source("code\\functions\\plot_max_distance.R")
 source("code\\functions\\plot_data_records.R")
+
 ## plot data
 result <- plot_data_records(cleaned_data_high)
+
 # Access the returned data
 cleaned_data <- result$cleaned_data
 daily_summary <- result$daily_summary
+
 ## possible mortality check
 daily_summary <- plot_max_distance(cleaned_data, daily_summary, days_window, color_mapping)
+
 ## make a monitoring table
 create_interactive_table(daily_summary)
+
 # Identify missing dates and filter for NA gps_fix_count
 missing_gps_data <- daily_summary %>%
   group_by(individual_local_identifier) %>%
   complete(date = seq(min(date), max(date), by = "day")) %>%
   filter(is.na(gps_fix_count)) %>%
   ungroup()
+
 # Plot the data
 missing_gps_plot <- ggplotly(ggplot(missing_gps_data, aes(x = date, y = individual_local_identifier)) +
                                geom_point() +
                                labs(title = "Missing GPS Fix Count Data Points", x = "Date", y = "Individual ID") +
                                theme_minimal())
 saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained = TRUE)
+
 # plot daytime locations
 plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', color_mapping)
+
 # find and plot nighttime locations - last 10 minutes in the day
 data_filtered_night <- cleaned_data %>%
   dplyr::group_by(individual_local_identifier, date(timestamp)) %>%
   slice(n()) %>%
   ungroup() %>%
   filter(format(timestamp, "%H:%M") >= "15:50")
+
 plot_interactive_map(data_filtered_night, 'plots/htmls/baboon_night_interactive_map.html', color_mapping)
+
 saveRDS(data_filtered_night, "data/night_locations.RDS")
+
 system("python code/plot_kmls.py", wait = TRUE)
+
 source("code\\functions\\find_sleeping_site_clusters.R")
 source("code\\functions\\find_sleeping_site_transitions.R")
+
 # System commands to commit and push changes
 system("git add plots/")  # Add changes only from the plots directory
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
