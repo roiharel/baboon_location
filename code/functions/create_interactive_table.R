@@ -33,8 +33,19 @@ create_interactive_table <- function(daily_summary) {
     filter(date == max(date)) %>%
     dplyr::select(tag_local_identifier, individual_local_identifier, group_id, date, rounded_time_diff, last_batt_value, max_last_days) %>%
     ungroup() %>%
-    rename(status = rounded_time_diff)
+    rename(status = rounded_time_diff) %>%
+    mutate(max_last_days = signif(max_last_days, 2))
   
+  
+  first_days <- daily_summary %>%
+    group_by(tag_local_identifier) %>%
+    summarise(first_day = min(date), .groups = "drop")
+  # Merge first day into last_rows_per_tag
+  last_rows_per_tag <- last_rows_per_tag %>%
+    rename(last_day = date) %>%
+    left_join(first_days, by = "tag_local_identifier")  %>%
+    select(tag_local_identifier, individual_local_identifier, group_id, first_day, last_day, everything())
+    
   # Prepare HTML formatted columns
   last_rows_per_tag_html <- last_rows_per_tag
   last_rows_per_tag_html$tag_local_identifier <- mapply(
@@ -44,8 +55,8 @@ create_interactive_table <- function(daily_summary) {
     last_rows_per_tag$tag_local_identifier,
     last_rows_per_tag$max_last_days
   )
-  last_rows_per_tag_html <- last_rows_per_tag_html %>%
-    select(-max_last_days)
+  #last_rows_per_tag_html <- last_rows_per_tag_html %>%
+  #  select(-max_last_days)
   
   # Create the interactive table
   interactive_table <- datatable(
