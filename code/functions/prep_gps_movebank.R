@@ -23,7 +23,7 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   
   baboon_data <- baboon_data %>%
     left_join(metadata %>% 
-                dplyr::select(deployment_id, group_id, sex), by = "deployment_id")  %>%
+                dplyr::select(deployment_id, tag_local_identifier, group_id, sex), by = "deployment_id")  %>%
     mt_filter_per_interval(unit = time_interval)
   
   baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
