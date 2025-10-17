@@ -38,7 +38,7 @@ clusters <- clustered_data %>%
     radius = rescale(count, to = c(3, 10))  # Scaled for visualization
   )
 
-# Step 2: Compute proportion of each transition per individual
+# Compute proportion of each transition per individual
 transition_counts <- transitions %>%
   dplyr::group_by(group_id, individual_id, from = cluster_united, to = next_cluster) %>%
   dplyr::summarise(
@@ -62,26 +62,11 @@ transition_props <- transition_counts %>%
   ) %>%
   dplyr::ungroup()
 
-# Assign color per individual
-
-
-group_col = c(
-  "#800000",  # Maroon - Mlimafisi
-  "#7FFF00",  # Chartreuse - Campsite
-  "#CD7F32",  # Bronze - BaboonCliffs
-  "#50C878",  # Emerald - EagleScout
-  "#C8A2C8",  # Lilac - Leikiji
-  "#B87333",  # Copper - Clifford
-  "#FF00FF",  # Magenta - WestMukenya
-  "#87CEFA",  # LapisSplinter - LizardRock2
-  "#26619C",  # Lapis - LizardRock
-  "#CCCCFF"  # Periwinkle - Pylon
-)
 
 group_ids <- unique(clustered_data$group_id)
 group_palettes <- setNames(group_col[1:length(group_ids)], group_ids)
 
-# Step 2: Assign individuals shades within each group
+# Assign individuals shades within each group
 individual_colors <- clustered_data %>%
   distinct(group_id, individual_id) %>%
   dplyr::group_by(group_id) %>%
@@ -92,7 +77,7 @@ individual_colors <- clustered_data %>%
   ungroup() %>%
   { setNames(.$color, .$individual_id) }
 
-# Step 3: Create leaflet map
+# Create leaflet map
 m <- leaflet() %>%
   addTiles() %>%
   setView(lng = mean(clustered_data$lon), lat = mean(clustered_data$lat), zoom = 12)
@@ -110,7 +95,7 @@ m <- m %>%
     label = ~paste("Cluster", cluster_united)
   )
 
-# Step 4: Add polylines by group layer
+# Add polylines by group layer
 layer_names <- c()
 
 for (grp in unique(transition_props$group_id)) {
@@ -121,7 +106,7 @@ for (grp in unique(transition_props$group_id)) {
   
   for (i in seq_len(nrow(group_trans))) {
     row <- group_trans[i, ]
-    
+    if (!is.na(row$individual_id)){
     m <- addPolylines(
       m,
       lng = c(row$from_lon, row$to_lon),
@@ -135,10 +120,11 @@ for (grp in unique(transition_props$group_id)) {
       ),
       group = layer_name
     )
+    }
   }
 }
 
-# Step 5: Add layer control to toggle groups
+# Add layer control to toggle groups
 m <- m %>%
   addLayersControl(
     overlayGroups = layer_names,

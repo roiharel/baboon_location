@@ -31,7 +31,7 @@ plot_data_records <- function(cleaned_data) {
     dplyr::group_by(tag_local_identifier, individual_local_identifier, group_id, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               gps_fix_count = n(),
-              min_battery = min(eobs_fix_battery_voltage, na.rm = TRUE),   
+              min_battery = min(eobs_battery_voltage, na.rm = TRUE),   
               .groups = "drop") %>%
     dplyr::mutate(rounded_time_diff = map_dbl(median_time_diff, round_to_nearest, values = c(60, 120, 7200))) %>%
     dplyr::mutate(rounded_time_diff = recode(rounded_time_diff, 

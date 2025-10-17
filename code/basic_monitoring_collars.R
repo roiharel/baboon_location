@@ -65,26 +65,27 @@
   speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
   possible_mortality <- c(059292, 059293 , 059294, 059295,  059296, 10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
-  group_col = c(
-    "#800000",   # Maroon - Mlimafisi
-    "#7FFF00",   # Chartreuse - Campsite
-    "#CD7F32",   # Bronze - BaboonCliffs
-    "#50C878",   # Emerald - EagleScout
-    "#C8A2C8",   # Lilac - Leikiji
-    "#B87333",   # Copper - Clifford
-    "#FF00FF",   # Magenta - WestMukenya
-    "#87CEFA",   # LapisSplinter - LizardRock2
-    "#26619C",   # Lapis - LizardRock
-    "#CCCCFF",   # Periwinkle - Pylon
-    "#FF0000",   # Red - PhantomWest
-    "#008080",   # Teal - Teal
-    "#C0C0C0",   # Silver - sneakySilver
-    "#800080",   # Purple - Purple
-    "#E0115F",   # Ruby - RubyRunners
-    "#008000",   # Green - Ivan's
-    "#00A36C"    # Jade - Ol Jogi School
+  # Your color mapping
+  color_mapping = c(
+    Copper = "#B87333",        # 
+    Bronze = "#CD7F32",        # 
+    Chartreuse = "#7FFF00",    # 
+    Emerald = "#50C878",       # 
+    Lilac = "#C8A2C8",         # 
+    Periwinkle = "#CCCCFF",    # 
+    Lapis = "#26619C",         # 
+    Maroon = "#800000",        # 
+    Magenta = "#FF00FF",       # 
+    LapisSplinter = "#87CEFA", # 
+    RubyRunners = "#E0115F",   # 
+    PhantomWest = "#FF0000",   # 
+    SneakySilver = "#C0C0C0",  # 
+    TrickyTeal = "#008080",    # 
+    Purple = "#800080",        #
+    Green = "#008000",         # 
+    Jade = "#00A36C"           # 
   )
-  saveRDS(group_col, "C:\\Users\\meerkat\\Documents\\MBRP\\data\\group_colors.RDS")
+  saveRDS(color_mapping, "C:\\Users\\meerkat\\Documents\\MBRP\\data\\group_colors.RDS")
   setwd("C:\\Users\\meerkat\\Documents\\MBRP")
 }
 ## functions
@@ -124,10 +125,11 @@ saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained 
 # plot daytime locations
 plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', color_mapping)
 
-# find and plot nighttime locations - last 10 minutes in the day
+# Nighttime locations (last fix of the day after 15:50)
 data_filtered_night <- cleaned_data %>%
-  dplyr::group_by(individual_local_identifier, date(timestamp)) %>%
-  slice(n()) %>%
+  mutate(date = date(timestamp)) %>%
+  group_by(individual_local_identifier, date) %>%
+  slice_tail(n = 1) %>%
   ungroup() %>%
   filter(format(timestamp, "%H:%M") >= "15:50")
 
@@ -136,6 +138,7 @@ plot_interactive_map(data_filtered_night, 'plots/htmls/baboon_night_interactive_
 saveRDS(data_filtered_night, "data/night_locations.RDS")
 
 system("python code/plot_kmls.py", wait = TRUE)
+
 
 source("code\\functions\\find_sleeping_site_clusters.R")
 source("code\\functions\\find_sleeping_site_transitions.R")
