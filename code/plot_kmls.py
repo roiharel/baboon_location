@@ -36,7 +36,8 @@ base_colors = {
     "sneakySilver": "#C0C0C0",  # Silver
     "Purple": "#800080",         # Purple
     "Green": "#008000",         # Green
-    "Jade": "#00A86B"
+    "Jade": "#00A86B",
+    "RubyRunners": "#E0115F"
 }
 
 # Function to generate a gradient of colors
