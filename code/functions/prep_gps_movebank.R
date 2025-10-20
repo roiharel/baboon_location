@@ -25,9 +25,9 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   # calc speed azimuth and clean speed outliers
   baboon_data %<>% dplyr::mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
   baboon_data$speed <- set_units(baboon_data$speed, "m/s")
-  baboon_data <- baboon_data %>%
-    filter(speed <= speed_threshold | is.na(speed))
   
+  # clean locations outside of Study area
+  baboon_data <- baboon_data 
   # add fields from metadata
   metadata <- mt_track_data(baboon_data)
   
@@ -40,6 +40,10 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   baboon_data$location.lat <- sf::st_coordinates(baboon_data)[,2]
   baboon_data$group_id <- baboon_data$group_id
   
+  baboon_data <- baboon_data %>%
+    filter(speed <= speed_threshold | is.na(speed)) %>%
+    filter(location.long >= 36.7, location.long <= 37,
+           location.lat >= 0.2, location.lat <= 0.6)
   
   # Identify matching columns
   matching_columns <- Reduce(intersect, list(names(baboon_data)))

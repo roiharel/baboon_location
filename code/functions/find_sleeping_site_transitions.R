@@ -64,7 +64,6 @@ transition_props <- transition_counts %>%
 
 
 group_ids <- unique(clustered_data$group_id)
-group_palettes <- setNames(group_col[1:length(group_ids)], group_ids)
 
 # Assign individuals shades within each group
 individual_colors <- clustered_data %>%
@@ -72,7 +71,7 @@ individual_colors <- clustered_data %>%
   dplyr::group_by(group_id) %>%
   dplyr::mutate(
     # Create a gradient palette for individuals in the group
-    color = colorRampPalette(c("white", group_palettes[group_id[1]]))(n())[row_number()]
+    color = colorRampPalette(c("white", color_mapping[group_id[1]]))(n())[row_number()]
   ) %>%
   ungroup() %>%
   { setNames(.$color, .$individual_id) }
@@ -137,7 +136,7 @@ saveWidget(m, file = "plots/htmls/transitions_sleeping_sites_map.html", selfcont
 #################  GROUP LEVEL - CURVED LINES TRANSITIONS 
 
 
-group_names <- unique(group_transitions$group_id)
+group_names <- unique(transitions$group_id)
 group_transitions <- transitions %>%
   dplyr::group_by(group_id, from = cluster, to = next_cluster) %>%
   dplyr::summarise(
@@ -203,7 +202,7 @@ for (i in seq_len(nrow(group_transitions))) {
     lng = curve_coords$lon,
     lat = curve_coords$lat,
     weight = row$weight_no_self,
-    color = unname(group_palettes[row$group_id]),
+    color = unname(color_mapping[row$group_id]),
     opacity = 0.8,
     label = paste0(
       row$group_id, ": ",

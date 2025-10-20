@@ -139,7 +139,6 @@ saveRDS(data_filtered_night, "data/night_locations.RDS")
 
 system("python code/plot_kmls.py", wait = TRUE)
 
-
 source("code\\functions\\find_sleeping_site_clusters.R")
 source("code\\functions\\find_sleeping_site_transitions.R")
 
@@ -148,3 +147,4 @@ system("git add plots/")  # Add changes only from the plots directory
 commit_message <- paste("Automated update -", Sys.Date())  # Generate commit message with date
 system(paste('git commit -m "', commit_message, '"', sep = ""))
 system("git push origin main")  # Push to the main branch
+  
