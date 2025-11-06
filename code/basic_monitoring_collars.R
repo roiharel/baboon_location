@@ -62,7 +62,7 @@
   days_window <- 4 # window in days - max distance
   date_start <- as.POSIXct("2024-02-28 03:00:00")
   date_end <- now(tz = "CET" )
-  speed_threshold <- set_units(10, "m/s")  # Replace "m/s" with the appropriate unit if needed
+  speed_threshold <- set_units(5, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
   possible_mortality <- c(059292, 059293 , 059294, 059295,  059296, 10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
   # Your color mapping
@@ -94,6 +94,7 @@ source("code\\functions\\create_interactive_table.R")
 source("code\\functions\\plot_interactive_map.R")
 source("code\\functions\\plot_max_distance.R")
 source("code\\functions\\plot_data_records.R")
+source("code\\functions\\cluster_groups.R")
 
 ## plot data
 result <- plot_data_records(cleaned_data_high)
@@ -139,8 +140,41 @@ saveRDS(data_filtered_night, "data/night_locations.RDS")
 
 system("python code/plot_kmls.py", wait = TRUE)
 
+# find nighttime clusters
+dt <- readRDS("data/night_locations.RDS")
+results <- cluster_groups(dt, eps_thres = 0.0001, united_eps_thres = 0.001, plot_map = TRUE)
+# Save outputs
+saveRDS(results$individual_night_locations, "data/night_locations_clust.RDS")
+saveWidget(results$map, file = "plots/htmls/clustered_map_satellite.html", selfcontained = TRUE)
+write.csv(results$cluster_summary, "cluster_summary.csv", row.names = FALSE)
+write.csv(results$individual_night_locations, "individual_night_locations.csv", row.names = FALSE)
+
+# find midday clusters
+data_filtered_midday <- cleaned_data %>%
+  mutate(date = date(timestamp)) %>%
+  filter(format(timestamp, "%H:%M") >= "10:00") %>%
+  group_by(individual_local_identifier, date) %>%
+  slice_min(timestamp, with_ties = FALSE) %>%
+  ungroup()
+
+results <- cluster_groups(data_filtered_midday, eps_thres = 0.0001, united_eps_thres = 0.001,plot_map = TRUE)
+
+# Save outputs
+saveRDS(results$individual_night_locations, "data/day_locations_clust.RDS")
+saveWidget(results$map, file = "plots/htmls/day_clustered_map_satellite.html", selfcontained = TRUE)
+write.csv(results$cluster_summary, "day_cluster_summary.csv", row.names = FALSE)
+write.csv(results$individual_night_locations, "day_individual_night_locations.csv", row.names = FALSE)
+
 source("code\\functions\\find_sleeping_site_clusters.R")
 source("code\\functions\\find_sleeping_site_transitions.R")
+
+source("code\\functions\\prep_location_mat.R")
+
+prep_location_mat(
+  input_rds_path = "data/gps_v1.RDS",
+  output_dir = "data",
+  utm_zone = 37,
+  hemisphere = "north")
 
 # System commands to commit and push changes
 system("git add plots/")  # Add changes only from the plots directory

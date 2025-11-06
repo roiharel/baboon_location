@@ -19,7 +19,7 @@ dt <- as.data.table(dt)
 dt <- dt[, .(individual_local_identifier, group_id, location.lat, location.long, timestamp)]
 
 # Function to cluster sleeping sites and return two summary tables
-identify_sleep_clusters <- function(dt, eps_thres = 0.005, pnts_num = 3) {
+identify_sleep_clusters <- function(dt, eps_thres = 0.002, pnts_num = 5) {
 
   # Extract coordinates and filter out NAs
   coords <- as.matrix(dt[, c("location.lat", "location.long")])
@@ -33,7 +33,7 @@ identify_sleep_clusters <- function(dt, eps_thres = 0.005, pnts_num = 3) {
   
   # Run DBSCAN
   distance_matrix <- distm(coords_clean, fun = distHaversine)
-  dbscan_result <- dbscan(coords_clean, eps = cluster_dist, minPts = 2, borderPoints = TRUE)
+  dbscan_result <- dbscan(coords_clean, eps = cluster_dist, minPts = 5, borderPoints = TRUE)
 
   clustered_data <- data.frame(
     individual_id = ind_ids,
@@ -86,8 +86,8 @@ cluster_summary$cluster_united <- as.factor(db$cluster)
 cluster_merged_summary <- cluster_summary %>%
   group_by(cluster_united) %>%
   summarise(
-    lat = weighted.mean(lat, count),
-    lon = weighted.mean(lon, count),
+    lat = weighted.mean(lat, log(count)),
+    lon = weighted.mean(lon, log(count)),
     count = sum(count),
     .groups = "drop"
   )

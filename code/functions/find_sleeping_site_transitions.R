@@ -114,7 +114,7 @@ for (grp in unique(transition_props$group_id)) {
       weight = row$weight,
       opacity = 0.8,
       label = paste0(
-        row$individual_id, ",", row$group_id, ": ", row$from, " → ", row$to,
+        row$individual_id, ",", row$group_id, ": ", row$from, " : ", row$to,
         " (", round(row$prop * 100, 1), "%)"
       ),
       group = layer_name
@@ -131,7 +131,7 @@ m <- m %>%
   )
 
 # Show map
-saveWidget(m, file = "plots/htmls/transitions_sleeping_sites_map.html", selfcontained = TRUE)
+saveWidget(m, file = "plots/htmls/transitions_individual_sleeping_sites_map.html", selfcontained = TRUE)
 
 #################  GROUP LEVEL - CURVED LINES TRANSITIONS 
 
@@ -206,7 +206,7 @@ for (i in seq_len(nrow(group_transitions))) {
     opacity = 0.8,
     label = paste0(
       row$group_id, ": ",
-      row$from, " → ", row$to,
+      row$from, " : ", row$to,
       " (", round(row$prop_no_self * 100, 1), "%)"
     ),
     group = row$group_id
@@ -232,5 +232,5 @@ m <- m %>%
     options = layersControlOptions(collapsed = FALSE)
   )
 
-saveWidget(m, file = "plots/htmls/transitions_sleeping_sites_map.html", selfcontained = TRUE)
+saveWidget(m, file = "plots/htmls/transitions_group_sleeping_sites_map.html", selfcontained = TRUE)
 

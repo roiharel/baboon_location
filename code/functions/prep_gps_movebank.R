@@ -1,7 +1,7 @@
 
 cols_to_keep <- c(
   "geometry", "azimuth", "speed", "individual_local_identifier", "tag_local_identifier",
-  "group_id", "sex", "location.long", "location.lat", "timestamp", "event_id",
+  "group_id", "sex", "age", "location.long", "location.lat", "timestamp", "event_id",
   "ground_speed", "heading", "height_above_ellipsoid", "deployment_id",
   "eobs_battery_voltage", "eobs_horizontal_accuracy_estimate", "eobs_key_bin_checksum",
   "eobs_speed_accuracy_estimate", "eobs_start_timestamp", "eobs_status",
@@ -30,18 +30,24 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   baboon_data <- baboon_data 
   # add fields from metadata
   metadata <- mt_track_data(baboon_data)
-  
+  metadata$age <- metadata$individual_comments
   baboon_data <- baboon_data %>%
     left_join(metadata %>% 
-                dplyr::select(deployment_id, tag_local_identifier, individual_local_identifier, group_id, sex), by = "deployment_id")  %>%
+                dplyr::select(deployment_id, tag_local_identifier, individual_local_identifier, group_id, sex, age), by = "deployment_id")  %>%
     mt_filter_per_interval(unit = time_interval)
   
   baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
   baboon_data$location.lat <- sf::st_coordinates(baboon_data)[,2]
   baboon_data$group_id <- baboon_data$group_id
   
+  baboon_data <- baboon_data[as.numeric(baboon_data$gps_satellite_count) != 0, ]
+
   baboon_data <- baboon_data %>%
-    filter(speed <= speed_threshold | is.na(speed)) %>%
+    filter(is.na(height_above_ellipsoid) | as.numeric(height_above_ellipsoid) < 2000)
+  # baboon_data <- baboon_data[baboon_data$eobs_status == "A", ] 
+  
+  baboon_data <- baboon_data %>%
+    filter(speed <= speed_threshold) %>%
     filter(location.long >= 36.7, location.long <= 37,
            location.lat >= 0.2, location.lat <= 0.6)
   

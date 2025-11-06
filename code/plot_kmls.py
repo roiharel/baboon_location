@@ -19,25 +19,45 @@ data = pd.read_csv('data\\gps_v1.csv')
 # Convert timestamp to datetime for easier manipulation
 #data['timestamp'] = pd.to_datetime(data['timestamp'], format='%Y-%m-%d %H:%M:%S.%f')
 data['timestamp'] = pd.to_datetime(data['timestamp'], format='ISO8601')
-# Define distinct base colors for each group
+# Define distinct base colors for each group [rrggbb]
+# base_colors = {
+#     "Maroon": "#800000",        # Maroon
+#     "Chartreuse": "#7FFF00",    # Chartreuse
+#     "Bronze": "#CD7F32",        # Bronze
+#     "Emerald": "#50C878",       # Emerald
+#     "Lilac": "#C8A2C8",         # Lilac
+#     "Copper": "#B87333",        # Copper
+#     "Magenta": "#FF00FF",       # Magenta
+#     "LapisSplinter": "#87CEFA", # LapisSplinter
+#     "Lapis": "#26619C",         # Lapis
+#     "Periwinkle": "#CCCCFF",    # Periwinkle
+#     "PhantomWest": "#FF0000",   # Red
+#     "Teal": "#008080",          # Teal
+#     "SneakySilver": "#C0C0C0",  # Silver
+#     "Purple": "#800080",         # Purple
+#     "Green": "#008000",         # Green
+#     "Jade": "#00A86B",
+#     "RubyRunners": "#E0115F"
+# }
+# [ggbbrr]
 base_colors = {
-    "Maroon": "#800000",        # Maroon
-    "Chartreuse": "#7FFF00",    # Chartreuse
-    "Bronze": "#CD7F32",        # Bronze
-    "Emerald": "#50C878",       # Emerald
-    "Lilac": "#C8A2C8",         # Lilac
-    "Copper": "#B87333",        # Copper
-    "Magenta": "#FF00FF",       # Magenta
-    "LapisSplinter": "#87CEFA", # LapisSplinter
-    "Lapis": "#26619C",         # Lapis
-    "Periwinkle": "#CCCCFF",    # Periwinkle
-    "PhantomWest": "#FF0000",   # Red
-    "Teal": "#008080",          # Teal
-    "sneakySilver": "#C0C0C0",  # Silver
-    "Purple": "#800080",         # Purple
-    "Green": "#008000",         # Green
-    "Jade": "#00A86B",
-    "RubyRunners": "#E0115F"
+    "Maroon":    "#000080",  # Maroon      (bbggrr: 00 00 80)
+    "Chartreuse":"#00FF7F",  # Chartreuse  (bbggrr: 00 FF 7F)
+    "Bronze":    "#327FCD",  # Bronze      (bbggrr: 32 7F CD)
+    "Emerald":   "#78C850",  # Emerald     (bbggrr: 78 C8 50)
+    "Lilac":     "#C8A2C8",  # Lilac       (bbggrr: A2 C8 C8) #A2C8C8
+    "Copper":    "#3373B8",  # Copper      (bbggrr: 33 73 B8)
+    "Magenta":   "#FF00FF",  # Magenta     (bbggrr: FF 00 FF)
+    "LapisSplinter":"#FACE87",# LapisSplinter (bbggrr: FA CE 87)
+    "Lapis":     "#26619C",  # Lapis       (bbggrr: 1C 96 26) # 1C9626
+    "Periwinkle":"#CCCCFF",  # Periwinkle  (bbggrr: CC FF CC) # CCFFCC
+    "PhantomWest":"#0000FF", # Red         (bbggrr: 00 00 FF)
+    "TrickyTeal":      "#808000",  # Teal        (bbggrr: 80 80 00)
+    "SneakySilver":"#C0C0C0",# Silver      (bbggrr: C0 C0 C0)
+    "Purple":    "#800080",  # Purple      (bbggrr: 00 80 80) #008080
+    "Green":     "#008000",  # Green       (bbggrr: 00 80 00)
+    "Jade":      "#00A86B",  # Jade        (bbggrr: A8 86 00)
+    "RubyRunners":"#E0115F"  # RubyRunners (bbggrr: 11 5F E0) #115FE0
 }
 
 # Function to generate a gradient of colors
@@ -150,22 +170,22 @@ for group_id, group_data in grouped:
     for individual_id, individual_data in group_data.groupby('individual_local_identifier'):
         # Create a folder for each individual
         tag_local_identifier = individual_data['tag_local_identifier'].iloc[0] if not individual_data['tag_local_identifier'].empty else 'Unknown'
-        folder = kml.newfolder(name=f"{individual_id} ({tag_local_identifier})")
+        folder = kml.newfolder(name=f"{individual_id} ({tag_local_identifier}) [{group_id}] ")
         folder.visibility = 0  # Set folder visibility to 0 (hidden)
         
         # Initialize the start time for the first segment
         start_time = individual_data['timestamp'].min()
-        end_time = start_time + timedelta(hours=1)
+        end_time = start_time + timedelta(minutes=20)
         
-        while start_time < individual_data['timestamp'].max():
+        while start_time <= individual_data['timestamp'].max():
             # Filter data within the current time window
             window_data = individual_data[
-                (individual_data['timestamp'] >= start_time) &
-                (individual_data['timestamp'] < end_time)
+                (individual_data['timestamp'] >= start_time - timedelta(minutes=buffer_time)) &
+                (individual_data['timestamp'] <= end_time + timedelta(minutes=buffer_time))
             ]
             
             if not window_data.empty:
-                label = f"{individual_id} ({tag_local_identifier}) {start_time.strftime('%Y-%m-%d %H:%M:%S')}"
+                label = f"{group_id} {individual_id} ({tag_local_identifier}) {start_time.strftime('%Y-%m-%d %H:%M:%S')}"
                 line = folder.newlinestring(name=label)
                 line.coords = list(zip(window_data['location.long'], window_data['location.lat']))
                 
@@ -180,7 +200,7 @@ for group_id, group_data in grouped:
             
             # Move to the next time window
             start_time = end_time
-            end_time = start_time + timedelta(hours=1)
+            end_time = start_time + timedelta(minutes=20)
 
 # Save the KMZ file for the last week
 kml.savekmz("plots\\kmls\\last_week.kmz")
