@@ -142,12 +142,12 @@ system("python code/plot_kmls.py", wait = TRUE)
 
 # find nighttime clusters
 dt <- readRDS("data/night_locations.RDS")
-results <- cluster_groups(dt, eps_thres = 0.0001, united_eps_thres = 0.001, plot_map = TRUE)
+# results <- cluster_groups(dt, eps_thres = 0.0001, united_eps_thres = 0.001, plot_map = TRUE)
 # Save outputs
-saveRDS(results$individual_night_locations, "data/night_locations_clust.RDS")
-saveWidget(results$map, file = "plots/htmls/clustered_map_satellite.html", selfcontained = TRUE)
-write.csv(results$cluster_summary, "cluster_summary.csv", row.names = FALSE)
-write.csv(results$individual_night_locations, "individual_night_locations.csv", row.names = FALSE)
+# saveRDS(results$individual_night_locations, "data/night_locations_clust.RDS")
+# saveWidget(results$map, file = "plots/htmls/clustered_map_satellite.html", selfcontained = TRUE)
+# write.csv(results$cluster_summary, "cluster_summary.csv", row.names = FALSE)
+# write.csv(results$individual_night_locations, "individual_night_locations.csv", row.names = FALSE)
 
 # find midday clusters
 data_filtered_midday <- cleaned_data %>%
