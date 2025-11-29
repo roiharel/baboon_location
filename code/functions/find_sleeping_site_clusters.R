@@ -12,11 +12,10 @@ library(data.table)
 # parameters
 cluster_dist <- 0.0001
 united_cluster_dist <- 0.001  
-
 dt <- readRDS("data/night_locations.RDS")
 
 dt <- as.data.table(dt)
-dt <- dt[, .(individual_local_identifier, group_id, location.lat, location.long, timestamp)]
+dt <- dt[, .(animal_id, group_id, location.lat, location.long, timestamp)]
 
 # Function to cluster sleeping sites and return two summary tables
 identify_sleep_clusters <- function(dt, eps_thres = 0.002, pnts_num = 5) {
@@ -27,7 +26,7 @@ identify_sleep_clusters <- function(dt, eps_thres = 0.002, pnts_num = 5) {
   valid_rows <- complete.cases(dt[, c("location.lat", "location.long")])
   
   # Keep associated metadata
-  ind_ids <- dt$individual_local_identifier[valid_rows]
+  ind_ids <- dt$animal_id[valid_rows]
   group_ids <- dt$group_id[valid_rows]
   dates <- as.Date(dt$timestamp[valid_rows])
   
@@ -36,7 +35,7 @@ identify_sleep_clusters <- function(dt, eps_thres = 0.002, pnts_num = 5) {
   dbscan_result <- dbscan(coords_clean, eps = cluster_dist, minPts = 5, borderPoints = TRUE)
 
   clustered_data <- data.frame(
-    individual_id = ind_ids,
+    animal_id = ind_ids,
     group_id = group_ids,
     date = dates,
     lat = coords_clean[, 1],
@@ -60,7 +59,7 @@ identify_sleep_clusters <- function(dt, eps_thres = 0.002, pnts_num = 5) {
   
   # Table 2: Where each individual slept each night
   individual_night_locations <- clustered_data %>%
-    select(date, cluster, lat, lon, individual_id, group_id)
+    select(date, cluster, lat, lon, animal_id, group_id)
   
   # Return as list of two tables
   return(list(
@@ -161,7 +160,7 @@ map <- map %>%
                    fillColor = "white",
                    fillOpacity = 0.9,
                    stroke = FALSE,
-                   label = ~paste("ID:", individual_id, "date:", date, "group:", group_id),
+                   label = ~paste("ID:", animal_id, "date:", date, "group:", group_id),
                    group = "Individual Nights")
 
 # Add layer control

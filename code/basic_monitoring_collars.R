@@ -57,8 +57,8 @@
   #movebank_store_credentials("USER", "PASSWORD", force = TRUE)
   #ggmap::register_google(key = "KEY")
   study_id <- 3445611111
-  time_interval_high <- "1 mins"
-  time_interval_low <- "1 hours" #time interval for plots
+  time_interval_min <- "1 mins"
+  time_interval_hour <- "1 hours" #time interval for plots
   days_window <- 4 # window in days - max distance
   date_start <- as.POSIXct("2024-02-28 03:00:00")
   date_end <- now(tz = "CET" )
@@ -87,9 +87,20 @@
   )
   saveRDS(color_mapping, "C:\\Users\\meerkat\\Documents\\MBRP\\data\\group_colors.RDS")
   setwd("C:\\Users\\meerkat\\Documents\\MBRP")
+  output_data_folder <- "Z:/baboon/working/data/processed/2025/gps/v1_cleaned"
 }
 ## functions
+# prep data
 source("code\\functions\\prep_gps_movebank.R")
+source("code\\functions\\prep_location_mat.R")
+
+prep_location_mat(
+  input_rds_path = "data/gps_v1.RDS",
+  output_dir = output_data_folder, # "data",
+  utm_zone = 37,
+  hemisphere = "north")
+
+
 source("code\\functions\\create_interactive_table.R")
 source("code\\functions\\plot_interactive_map.R")
 source("code\\functions\\plot_max_distance.R")
@@ -111,15 +122,15 @@ create_interactive_table(daily_summary)
 
 # Identify missing dates and filter for NA gps_fix_count
 missing_gps_data <- daily_summary %>%
-  group_by(individual_local_identifier) %>%
+  group_by(animal_id) %>%
   complete(date = seq(min(date), max(date), by = "day")) %>%
   filter(is.na(gps_fix_count)) %>%
   ungroup()
 
 # Plot the data
-missing_gps_plot <- ggplotly(ggplot(missing_gps_data, aes(x = date, y = individual_local_identifier)) +
+missing_gps_plot <- ggplotly(ggplot(missing_gps_data, aes(x = date, y = animal_id)) +
                                geom_point() +
-                               labs(title = "Missing GPS Fix Count Data Points", x = "Date", y = "Individual ID") +
+                               labs(title = "Missing GPS Fix Count Data Points", x = "Date", y = "Animal ID") +
                                theme_minimal())
 saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained = TRUE)
 
@@ -129,7 +140,7 @@ plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html'
 # Nighttime locations (last fix of the day after 15:50)
 data_filtered_night <- cleaned_data %>%
   mutate(date = date(timestamp)) %>%
-  group_by(individual_local_identifier, date) %>%
+  group_by(animal_id, date) %>%
   slice_tail(n = 1) %>%
   ungroup() %>%
   filter(format(timestamp, "%H:%M") >= "15:50")
@@ -153,7 +164,7 @@ dt <- readRDS("data/night_locations.RDS")
 data_filtered_midday <- cleaned_data %>%
   mutate(date = date(timestamp)) %>%
   filter(format(timestamp, "%H:%M") >= "10:00") %>%
-  group_by(individual_local_identifier, date) %>%
+  group_by(animal_id, date) %>%
   slice_min(timestamp, with_ties = FALSE) %>%
   ungroup()
 
@@ -167,14 +178,6 @@ write.csv(results$individual_night_locations, "day_individual_night_locations.cs
 
 source("code\\functions\\find_sleeping_site_clusters.R")
 source("code\\functions\\find_sleeping_site_transitions.R")
-
-source("code\\functions\\prep_location_mat.R")
-
-prep_location_mat(
-  input_rds_path = "data/gps_v1.RDS",
-  output_dir = "data",
-  utm_zone = 37,
-  hemisphere = "north")
 
 # System commands to commit and push changes
 system("git add plots/")  # Add changes only from the plots directory

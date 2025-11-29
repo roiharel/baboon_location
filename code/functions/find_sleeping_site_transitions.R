@@ -16,8 +16,8 @@ clustered_data <- individual_night_locations %>%
 
 # Sort and calculate transitions
 transitions <- clustered_data %>%
-  dplyr::arrange(group_id, individual_id, date) %>%
-  dplyr::group_by(individual_id) %>%
+  dplyr::arrange(group_id, animal_id, date) %>%
+  dplyr::group_by(animal_id) %>%
   dplyr::mutate(
     next_cluster = lead(cluster_united),
     next_lat = lead(lat),
@@ -40,7 +40,7 @@ clusters <- clustered_data %>%
 
 # Compute proportion of each transition per individual
 transition_counts <- transitions %>%
-  dplyr::group_by(group_id, individual_id, from = cluster_united, to = next_cluster) %>%
+  dplyr::group_by(group_id, animal_id, from = cluster_united, to = next_cluster) %>%
   dplyr::summarise(
     count = dplyr::n(),
     from_lon = dplyr::first(lon),
@@ -55,7 +55,7 @@ transition_counts <- transitions %>%
   )
 
 transition_props <- transition_counts %>%
-  dplyr::group_by(group_id, individual_id) %>%
+  dplyr::group_by(group_id, animal_id) %>%
   dplyr::mutate(
     prop = count / sum(count),
     weight = 2 + 8 * prop  # Line thickness from 2 to 10
@@ -67,14 +67,14 @@ group_ids <- unique(clustered_data$group_id)
 
 # Assign individuals shades within each group
 individual_colors <- clustered_data %>%
-  distinct(group_id, individual_id) %>%
+  distinct(group_id, animal_id) %>%
   dplyr::group_by(group_id) %>%
   dplyr::mutate(
     # Create a gradient palette for individuals in the group
     color = colorRampPalette(c("white", color_mapping[group_id[1]]))(n())[row_number()]
   ) %>%
   ungroup() %>%
-  { setNames(.$color, .$individual_id) }
+  { setNames(.$color, .$animal_id) }
 
 # Create leaflet map
 m <- leaflet() %>%
@@ -105,16 +105,16 @@ for (grp in unique(transition_props$group_id)) {
   
   for (i in seq_len(nrow(group_trans))) {
     row <- group_trans[i, ]
-    if (!is.na(row$individual_id)){
+    if (!is.na(row$animal_id)){
     m <- addPolylines(
       m,
       lng = c(row$from_lon, row$to_lon),
       lat = c(row$from_lat, row$to_lat),
-      color = individual_colors[[as.character(row$individual_id)]],
+      color = individual_colors[[as.character(row$animal_id)]],
       weight = row$weight,
       opacity = 0.8,
       label = paste0(
-        row$individual_id, ",", row$group_id, ": ", row$from, " : ", row$to,
+        row$animal_id, ",", row$group_id, ": ", row$from, " : ", row$to,
         " (", round(row$prop * 100, 1), "%)"
       ),
       group = layer_name

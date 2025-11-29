@@ -7,13 +7,13 @@ cluster_groups <- function(dt, eps_thres = 0.0001, united_eps_thres = 0.001, min
   library(htmlwidgets)
   
   setDT(dt)
-  dt <- dt[, .(individual_local_identifier, group_id, location.lat, location.long, timestamp)]
+  dt <- dt[, .(animal_id, group_id, location.lat, location.long, timestamp)]
   
   coords <- as.matrix(dt[, c("location.lat", "location.long")])
   coords_clean <- na.omit(coords)
   valid_rows <- complete.cases(dt[, c("location.lat", "location.long")])
   
-  ind_ids <- dt$individual_local_identifier[valid_rows]
+  ind_ids <- dt$animal_id[valid_rows]
   group_ids <- dt$group_id[valid_rows]
   dates <- as.Date(dt$timestamp[valid_rows])
   
@@ -42,6 +42,7 @@ cluster_groups <- function(dt, eps_thres = 0.0001, united_eps_thres = 0.001, min
   individual_night_locations <- clustered_data %>%
     select(date, cluster, lat, lon, individual_id, group_id) %>%
     mutate(cluster = as.character(cluster))
+  
   
   db_united <- dbscan(cluster_summary[, c("lon", "lat")], eps = united_eps_thres, minPts = 1, borderPoints = TRUE)
   cluster_summary$cluster_united <- as.factor(db_united$cluster)

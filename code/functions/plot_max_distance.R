@@ -1,9 +1,9 @@
 plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_mapping) {
   # Calculate max distance summary
   max_distance_summary <- cleaned_data %>%
-    dplyr::arrange(tag_local_identifier, timestamp) %>%
+    dplyr::arrange(tag_id, timestamp) %>%
     dplyr::mutate(date = as.Date(timestamp)) %>%
-    dplyr::group_by(tag_local_identifier, date) %>%
+    dplyr::group_by(tag_id, date) %>%
     dplyr::mutate(
       start_long = first(location.long),
       start_lat = first(location.lat),
@@ -19,8 +19,8 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_ma
   
   # Calculate max distance for the last days
   max_distance_summary <- max_distance_summary %>%
-    dplyr::arrange(tag_local_identifier, date) %>%
-    dplyr::group_by(tag_local_identifier) %>%
+    dplyr::arrange(tag_id, date) %>%
+    dplyr::group_by(tag_id) %>%
     dplyr::mutate(
       max_last_days = map_dbl(date, function(current_date) {
         relevant_values <- max_distance_from_start[
@@ -38,22 +38,22 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_ma
   # Join the calculated max_last_days to daily_summary
   daily_summary <- daily_summary %>%
     left_join(
-      max_distance_summary %>% select(tag_local_identifier, date, max_last_days),
-      by = c("tag_local_identifier", "date")
+      max_distance_summary %>% select(tag_id, date, max_last_days),
+      by = c("tag_id", "date")
     ) %>% 
     drop_na()
   
   # Prepare the data for plotting
   plot_data <- daily_summary %>%
     dplyr::filter(!is.na(daily_summary$max_last_days)) %>%
-    dplyr::select(tag_local_identifier, group_id, date, max_last_days)
+    dplyr::select(tag_id, group_id, date, max_last_days)
   
   # Create the interactive plot
   interactive_plot <- plot_ly(
     data = plot_data,
     x = ~date,
     y = ~max_last_days,
-    color = ~tag_local_identifier,
+    color = ~tag_id,
     colors = unname(color_mapping[plot_data$group_id]),  # Use the custom color palette
     type = 'scatter',
     mode = 'lines+markers',
@@ -66,7 +66,7 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_ma
                     itemclick = "toggleothers")
     ) %>%
     add_trace(
-      text = ~paste("Tag ID:", tag_local_identifier, "<br>Group ID:", group_id),
+      text = ~paste("Tag ID:", tag_id, "<br>Group ID:", group_id),
       hoverinfo = "text"
     )
   

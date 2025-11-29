@@ -1,13 +1,19 @@
 
-cols_to_keep <- c(
-  "geometry", "azimuth", "speed", "individual_local_identifier", "tag_local_identifier",
+cols_to_keep <- c( #  "deployment_id",
+  "geometry", "azimuth", "speed", "animal_id", "tag_id", 
   "group_id", "sex", "age", "location.long", "location.lat", "timestamp", "event_id",
-  "ground_speed", "heading", "height_above_ellipsoid", "deployment_id",
+  "ground_speed", "heading", "height_above_ellipsoid",
   "eobs_battery_voltage", "eobs_horizontal_accuracy_estimate", "eobs_key_bin_checksum",
   "eobs_speed_accuracy_estimate", "eobs_start_timestamp", "eobs_status",
   "eobs_temperature", "eobs_type_of_fix", "eobs_used_time_to_get_fix",
   "gps_dop", "gps_hdop", "gps_satellite_count"
 )
+
+cols_to_keep_limited <- c(
+  "animal_id", "tag_id", "timestamp",
+  "location.long", "location.lat",  
+  "ground_speed", "heading", "height_above_ellipsoid", "azimuth", "speed",  
+  "group_id", "sex", "age")
 
 # load data and basic cleaning
 download_data <- function(date_start, date_end) {
@@ -26,15 +32,42 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   baboon_data %<>% dplyr::mutate(azimuth = mt_azimuth(.), speed = mt_speed(.))
   baboon_data$speed <- set_units(baboon_data$speed, "m/s")
   
-  # clean locations outside of Study area
-  baboon_data <- baboon_data 
   # add fields from metadata
   metadata <- mt_track_data(baboon_data)
   metadata$age <- metadata$individual_comments
+  
+  baboon_data <- if ("deployment_id" %in% names(baboon_data)) {
+    
+    baboon_data %>%
+      left_join(
+        metadata %>%
+          dplyr::select(
+            deployment_id, tag_local_identifier, individual_local_identifier,
+            group_id, sex, age
+          ),
+        by = "deployment_id"
+      )
+    
+  } else {
+    
+    baboon_data %>%
+      left_join(
+        metadata %>%
+          dplyr::select(
+            individual_local_identifier, tag_local_identifier,
+            group_id, sex, age
+          ),
+        by = "individual_local_identifier"
+      )
+  }
+  
+  # Apply the rest of the pipeline
   baboon_data <- baboon_data %>%
-    left_join(metadata %>% 
-                dplyr::select(deployment_id, tag_local_identifier, individual_local_identifier, group_id, sex, age), by = "deployment_id")  %>%
-    mt_filter_per_interval(unit = time_interval)
+    mt_filter_per_interval(unit = time_interval) %>%
+    rename(
+      tag_id = tag_local_identifier,
+      animal_id = individual_local_identifier
+    )
   
   baboon_data$location.long <- sf::st_coordinates(baboon_data)[,1]
   baboon_data$location.lat <- sf::st_coordinates(baboon_data)[,2]
@@ -42,11 +75,11 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   
   baboon_data <- baboon_data[as.numeric(baboon_data$gps_satellite_count) != 0, ]
 
-  baboon_data <- baboon_data %>%
-    filter(is.na(height_above_ellipsoid) | as.numeric(height_above_ellipsoid) < 2000)
   # baboon_data <- baboon_data[baboon_data$eobs_status == "A", ] 
   
+  # clean locations outside of Study area
   baboon_data <- baboon_data %>%
+    filter(is.na(height_above_ellipsoid) | as.numeric(height_above_ellipsoid) < 2000) %>%
     filter(speed <= speed_threshold) %>%
     filter(location.long >= 36.7, location.long <= 37,
            location.lat >= 0.2, location.lat <= 0.6)
@@ -69,14 +102,23 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
 
 ## load data and basic cleaning
 baboon_data <- download_data(date_start, date_end)
-cleaned_data_high <- arrange_data(baboon_data, time_interval_high, speed_threshold)
-cleaned_data_low <- arrange_data(baboon_data, time_interval_low, speed_threshold)
+cleaned_data_min <- arrange_data(baboon_data, time_interval_min, speed_threshold)
+cleaned_data_hour <- arrange_data(baboon_data, time_interval_hour, speed_threshold)
 
-group_ids <- unique(cleaned_data_high$group_id)
+## save basic data - full data frame
+fwrite(cleaned_data_min, file.path(output_data_folder,"gps_v1_all_fields.csv"), row.names = FALSE)
+saveRDS(cleaned_data_min, file.path(output_data_folder,"gps_v1_all_fields.RDS"))
 
-## save basic data
-fwrite(cleaned_data_high, "data/gps_v1.csv", row.names = FALSE)
-saveRDS(cleaned_data_high, "data/gps_v1.RDS")
-saveRDS(cleaned_data_low, "data/gps_v1_1hour.RDS")
+## save basic data - limited fields 
+cleaned_data_min_limited <- cleaned_data_min[, cols_to_keep_limited, drop = FALSE]
+cleaned_data_hour_limited <- cleaned_data_hour[, cols_to_keep_limited, drop = FALSE]
 
-#write_parquet(cleaned_data_high, "gps_v1.parquet")
+fwrite(cleaned_data_min_limited, file.path(output_data_folder,"gps_v1.csv"), row.names = FALSE)
+fwrite(cleaned_data_hour_limited, file.path(output_data_folder,"gps_v1_1hour.csv"), row.names = FALSE)
+
+saveRDS(cleaned_data_min_limited, file.path(output_data_folder,"gps_v1.RDS"))
+saveRDS(cleaned_data_hour_limited, file.path(output_data_folder,"gps_v1_1hour.RDS"))
+
+write_parquet(cleaned_data_min_limited, file.path(output_data_folder,"gps_v1.parquet"))
+
+

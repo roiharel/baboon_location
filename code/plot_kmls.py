@@ -9,12 +9,15 @@ from matplotlib.colors import to_rgb, to_hex
 
 # Parameters
 time_window_minutes = 60
+time_window_days = 10
 buffer_time = 2
 morning_hour = 9
 
 # Read the CSV file
 os.chdir('C:\\Users\\meerkat\\Documents\\MBRP')  # Change to the correct directory
-data = pd.read_csv('data\\gps_v1.csv')
+#data = pd.read_csv('data\\gps_v1.csv')
+data = pd.read_csv('Z:/baboon/working/data/processed/2025/gps/v1_cleaned/gps_v1.csv')
+
 
 # Convert timestamp to datetime for easier manipulation
 #data['timestamp'] = pd.to_datetime(data['timestamp'], format='%Y-%m-%d %H:%M:%S.%f')
@@ -40,6 +43,8 @@ data['timestamp'] = pd.to_datetime(data['timestamp'], format='ISO8601')
 #     "RubyRunners": "#E0115F"
 # }
 # [ggbbrr]
+
+
 base_colors = {
     "Maroon":    "#000080",  # Maroon      (bbggrr: 00 00 80)
     "Chartreuse":"#00FF7F",  # Chartreuse  (bbggrr: 00 FF 7F)
@@ -49,7 +54,7 @@ base_colors = {
     "Copper":    "#3373B8",  # Copper      (bbggrr: 33 73 B8)
     "Magenta":   "#FF00FF",  # Magenta     (bbggrr: FF 00 FF)
     "LapisSplinter":"#FACE87",# LapisSplinter (bbggrr: FA CE 87)
-    "Lapis":     "#26619C",  # Lapis       (bbggrr: 1C 96 26) # 1C9626
+    "Lapis":     "#961C26",  # Lapis       (bbggrr: 1C 96 26) # 
     "Periwinkle":"#CCCCFF",  # Periwinkle  (bbggrr: CC FF CC) # CCFFCC
     "PhantomWest":"#0000FF", # Red         (bbggrr: 00 00 FF)
     "TrickyTeal":      "#808000",  # Teal        (bbggrr: 80 80 00)
@@ -57,7 +62,7 @@ base_colors = {
     "Purple":    "#800080",  # Purple      (bbggrr: 00 80 80) #008080
     "Green":     "#008000",  # Green       (bbggrr: 00 80 00)
     "Jade":      "#00A86B",  # Jade        (bbggrr: A8 86 00)
-    "RubyRunners":"#E0115F"  # RubyRunners (bbggrr: 11 5F E0) #115FE0
+    "RubyRunners":"#1E119B"  # RubyRunners (bbggrr: 11 5F E0) # 9b111e
 }
 
 # Function to generate a gradient of colors
@@ -86,10 +91,10 @@ for group_index, (group_id, group_data) in enumerate(grouped):
     kml = simplekml.Kml()
     
     # Sort data by individual and timestamp
-    group_data = group_data.sort_values(by=['individual_local_identifier', 'timestamp'])
+    group_data = group_data.sort_values(by=['animal_id', 'timestamp'])
     
     # Get unique individuals in the group
-    individuals = group_data['individual_local_identifier'].unique()
+    individuals = group_data['animal_id'].unique()
     num_individuals = len(individuals)
     
     # Generate a gradient of colors for the group
@@ -100,7 +105,7 @@ for group_index, (group_id, group_data) in enumerate(grouped):
     color_map = {individual: gradient_colors[i] for i, individual in enumerate(individuals)}
     
     # Iterate over each individual
-    for individual_id, individual_data in group_data.groupby('individual_local_identifier'):
+    for individual_id, individual_data in group_data.groupby('animal_id'):
         # Create a folder for each individual
         folder = kml.newfolder(name=individual_id)
         folder.visibility = 0  # Set folder visibility to 0 (hidden)
@@ -141,24 +146,15 @@ for group_index, (group_id, group_data) in enumerate(grouped):
 
 # Get the current date and calculate the start of the last week
 current_date = datetime.now().astimezone()  # Make current_date timezone-aware
-last_week_start = current_date - timedelta(days=7)
+last_period_start = current_date - timedelta(days=time_window_days)
 
-# Filter data for the last week
-data_last_week = data[(data['timestamp'] >= last_week_start) & (data['timestamp'] <= current_date)]
-
-# Get the current date and calculate the start of the last week
-# data['timestamp'] = pd.to_datetime(data['timestamp']).dt.tz_localize('UTC')
-
-current_date = datetime.now().astimezone()  # Make current_date timezone-aware
-last_week_start = current_date - timedelta(days=7)
-
-# Filter data for the last week
-data_last_week = data[(data['timestamp'] >= last_week_start) & (data['timestamp'] <= current_date)]
+# Filter data for the last period
+data_last_period = data[(data['timestamp'] >= last_period_start) & (data['timestamp'] <= current_date)]
 
 # Group the data by 'group_id'
-grouped = data_last_week.groupby('group_id')
+grouped = data_last_period.groupby('group_id')
 
-# Create a KMZ file for the last week
+# Create a KMZ file for the last period
 kml = simplekml.Kml()
 
 # Iterate over each group
@@ -167,10 +163,10 @@ for group_id, group_data in grouped:
     group_color = base_colors.get(group_id, "#000000")  # Default to black if not found
 
     # Iterate over each individual in the group
-    for individual_id, individual_data in group_data.groupby('individual_local_identifier'):
+    for individual_id, individual_data in group_data.groupby('animal_id'):
         # Create a folder for each individual
-        tag_local_identifier = individual_data['tag_local_identifier'].iloc[0] if not individual_data['tag_local_identifier'].empty else 'Unknown'
-        folder = kml.newfolder(name=f"{individual_id} ({tag_local_identifier}) [{group_id}] ")
+        tag_id = individual_data['tag_id'].iloc[0] if not individual_data['tag_id'].empty else 'Unknown'
+        folder = kml.newfolder(name=f"{individual_id} ({tag_id}) [{group_id}] ")
         folder.visibility = 0  # Set folder visibility to 0 (hidden)
         
         # Initialize the start time for the first segment
@@ -185,7 +181,7 @@ for group_id, group_data in grouped:
             ]
             
             if not window_data.empty:
-                label = f"{group_id} {individual_id} ({tag_local_identifier}) {start_time.strftime('%Y-%m-%d %H:%M:%S')}"
+                label = f"{group_id} {individual_id} ({tag_id}) {start_time.strftime('%Y-%m-%d %H:%M:%S')}"
                 line = folder.newlinestring(name=label)
                 line.coords = list(zip(window_data['location.long'], window_data['location.lat']))
                 

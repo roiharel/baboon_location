@@ -37,20 +37,20 @@ prep_location_mat <- function(
       format(time_grid, "%H:%M:%S") <= end_hour
   ]
   
-  ids <- unique(cleaned_data$individual_local_identifier)
+  ids <- unique(cleaned_data$animal_id)
   
   message("Expanding grid...")
   full_grid <- CJ(
     timestamp = time_grid,
-    individual_local_identifier = ids,
+    animal_id = ids,
     sorted = FALSE
   )
   
   message("Joining with cleaned data...")
   aligned <- merge(
     full_grid,
-    cleaned_data[, .(individual_local_identifier, timestamp, location.lat, location.long)],
-    by = c("individual_local_identifier", "timestamp"),
+    cleaned_data[, .(animal_id, timestamp, location.lat, location.long)],
+    by = c("animal_id", "timestamp"),
     all.x = TRUE
   )
   
@@ -75,21 +75,21 @@ prep_location_mat <- function(
   
   aligned_final <- merge(
     aligned,
-    processed_data[, .(individual_local_identifier, timestamp, utm_x, utm_y)],
-    by = c("individual_local_identifier", "timestamp"),
+    processed_data[, .(animal_id, timestamp, utm_x, utm_y)],
+    by = c("animal_id", "timestamp"),
     all.x = TRUE
   )
   
   sf_use_s2(TRUE)
   
   message("Creating wide matrices...")
-  lat_matrix <- dcast(aligned_final, timestamp ~ individual_local_identifier,
+  lat_matrix <- dcast(aligned_final, timestamp ~ animal_id,
                       value.var = "location.lat", fun.aggregate = function(x) x[1], fill = NA_real_)
-  lon_matrix <- dcast(aligned_final, timestamp ~ individual_local_identifier,
+  lon_matrix <- dcast(aligned_final, timestamp ~ animal_id,
                       value.var = "location.long", fun.aggregate = function(x) x[1], fill = NA_real_)
-  x_matrix <- dcast(aligned_final, timestamp ~ individual_local_identifier,
+  x_matrix <- dcast(aligned_final, timestamp ~ animal_id,
                     value.var = "utm_x", fun.aggregate = function(x) x[1], fill = NA_real_)
-  y_matrix <- dcast(aligned_final, timestamp ~ individual_local_identifier,
+  y_matrix <- dcast(aligned_final, timestamp ~ animal_id,
                     value.var = "utm_y", fun.aggregate = function(x) x[1], fill = NA_real_)
   
   # Create output directory if it doesn't exist

@@ -3,7 +3,7 @@ plot_interactive_map <- function(cleaned_data, output_file, color_mapping) {
   cleaned_data <- cleaned_data %>%
     filter(!is.na(group_id))
   
-  names_plot <- unique(sort(cleaned_data$group_id))
+  group_ids <- unique(sort(cleaned_data$group_id))
   
   m <- leaflet() %>%
     addTiles(group = "OSM") %>%

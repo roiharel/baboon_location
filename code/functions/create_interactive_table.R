@@ -29,9 +29,9 @@ create_interactive_table <- function(daily_summary) {
   }
   
   last_rows_per_tag <- daily_summary %>%
-    group_by(tag_local_identifier) %>%
+    group_by(tag_id) %>%
     filter(date == max(date)) %>%
-    dplyr::select(tag_local_identifier, individual_local_identifier, group_id, sex, age, date, rounded_time_diff, last_batt_value, max_last_days) %>%
+    dplyr::select(tag_id, animal_id, group_id, sex, age, date, rounded_time_diff, last_batt_value, max_last_days) %>%
     ungroup() %>%
     rename(status = rounded_time_diff) %>%
     mutate(max_last_days = signif(max_last_days, 2)) 
@@ -39,24 +39,24 @@ create_interactive_table <- function(daily_summary) {
   
   
   first_days <- daily_summary %>%
-    group_by(tag_local_identifier) %>%
+    group_by(tag_id) %>%
     summarise(first_day = min(date), .groups = "drop")
   # Merge first day into last_rows_per_tag
   last_rows_per_tag <- last_rows_per_tag %>%
     rename(last_day = date) %>%
-    left_join(first_days, by = "tag_local_identifier")  %>%
-    select(tag_local_identifier, individual_local_identifier, group_id, first_day, last_day, everything()) %>%
-    group_by(individual_local_identifier) %>%
+    left_join(first_days, by = "tag_id")  %>%
+    select(tag_id, animal_id, group_id, first_day, last_day, everything()) %>%
+    group_by(animal_id) %>%
     slice_max(last_day, with_ties = FALSE) %>%
     ungroup()
     
   # Prepare HTML formatted columns
   last_rows_per_tag_html <- last_rows_per_tag
-  last_rows_per_tag_html$tag_local_identifier <- mapply(
+  last_rows_per_tag_html$tag_id <- mapply(
     mark_status_change, 
     last_rows_per_tag$status, 
     last_rows_per_tag$last_batt_value,
-    last_rows_per_tag$tag_local_identifier,
+    last_rows_per_tag$tag_id,
     last_rows_per_tag$max_last_days
   )
   #last_rows_per_tag_html <- last_rows_per_tag_html %>%

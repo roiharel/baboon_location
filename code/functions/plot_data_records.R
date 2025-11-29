@@ -4,21 +4,21 @@ plot_data_records <- function(cleaned_data) {
   round_to_nearest <- function(x, values) {
     values[which.min(abs(values - x))] }
   
-  cleaned_data$tag_local_identifier <- with(cleaned_data, reorder(tag_local_identifier, group_id))
+  cleaned_data$tag_id <- with(cleaned_data, reorder(tag_id, group_id))
   
   # Order levels
   ordered_levels <- cleaned_data %>%
     dplyr::arrange(group_id) %>%
-    pull(tag_local_identifier) %>%
+    pull(tag_id) %>%
     unique()
   
-  cleaned_data$tag_local_identifier <- factor(cleaned_data$tag_local_identifier, levels = ordered_levels)
+  cleaned_data$tag_id <- factor(cleaned_data$tag_id, levels = ordered_levels)
   
   # Create and save the first plot
   records <- ggplot(cleaned_data, 
                     aes(x = timestamp, 
                         y = eobs_battery_voltage,
-                        color = tag_local_identifier)) +
+                        color = tag_id)) +
     geom_point() +
     labs(x = "timestamp", y = "tagID")
   interactive_plot <- ggplotly(records, tooltip = "text")
@@ -28,7 +28,7 @@ plot_data_records <- function(cleaned_data) {
   daily_summary <- cleaned_data %>%
     dplyr::mutate(date = as.Date(timestamp),            
                   time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
-    dplyr::group_by(tag_local_identifier, individual_local_identifier, group_id, age, sex, date) %>%
+    dplyr::group_by(tag_id, animal_id, group_id, age, sex, date) %>%
     summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               gps_fix_count = n(),
               min_battery = min(eobs_battery_voltage, na.rm = TRUE),   
@@ -41,20 +41,20 @@ plot_data_records <- function(cleaned_data) {
   
   # Find the most recent `rounded_time_diff` for each tag
   most_recent_rounded_time_diff <- daily_summary %>%
-    group_by(tag_local_identifier) %>%
+    group_by(tag_id) %>%
     filter(date == max(date)) %>%
-    dplyr::select(tag_local_identifier, 
+    dplyr::select(tag_id, 
                   last_rounded_time_diff = rounded_time_diff,  
                   last_batt_value = min_battery)               
   
   # Join this information back into the original `daily_summary`
   daily_summary <- daily_summary %>%
-    left_join(most_recent_rounded_time_diff, by = "tag_local_identifier") 
+    left_join(most_recent_rounded_time_diff, by = "tag_id") 
   
   daily_summary <- daily_summary %>%
-    dplyr::mutate(y_axis_label = interaction(group_id, tag_local_identifier, last_rounded_time_diff, last_batt_value, sep = " - ")) %>%
+    dplyr::mutate(y_axis_label = interaction(group_id, tag_id, last_rounded_time_diff, last_batt_value, sep = " - ")) %>%
     dplyr::mutate(y_axis_label = factor(y_axis_label, 
-                                        levels = unique(y_axis_label[order(group_id, tag_local_identifier)]))) 
+                                        levels = unique(y_axis_label[order(group_id, tag_id)]))) 
   
   # Create and save the second plot
   daily_plot <- ggplot(daily_summary, 
