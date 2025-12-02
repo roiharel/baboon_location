@@ -108,7 +108,7 @@ source("code\\functions\\plot_data_records.R")
 source("code\\functions\\cluster_groups.R")
 
 ## plot data
-result <- plot_data_records(cleaned_data_high)
+result <- plot_data_records(cleaned_data_min)
 
 # Access the returned data
 cleaned_data <- result$cleaned_data
@@ -135,7 +135,7 @@ missing_gps_plot <- ggplotly(ggplot(missing_gps_data, aes(x = date, y = animal_i
 saveWidget(missing_gps_plot, 'plots/htmls/missing_gps_plot.html', selfcontained = TRUE)
 
 # plot daytime locations
-plot_interactive_map(cleaned_data_low, 'plots/htmls/baboon_interactive_map.html', color_mapping)
+plot_interactive_map(cleaned_data_hour, 'plots/htmls/baboon_interactive_map.html', color_mapping)
 
 # Nighttime locations (last fix of the day after 15:50)
 data_filtered_night <- cleaned_data %>%

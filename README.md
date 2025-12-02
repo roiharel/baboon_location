@@ -18,8 +18,6 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 ## Monitoring tracking data
 
-## Monitoring tracking data
-
 [Field control table](https://roiharel.github.io/MBRP/plots/htmls/table_baboon_data_records.html)
 
 [Map - day&night](https://roiharel.github.io/MBRP/plots/htmls/baboon_interactive_map.html)
@@ -34,57 +32,37 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 [Map - proprtion sleep sites](https://roiharel.github.io/MBRP/plots/htmls/prop_sleep_site_map.html)
 
-[Map - missing data](https://roiharel.github.io/MBRP/plots/htmls/missing_gps_plot.html)
-
 [Map - Sleeping sites transitions](https://roiharel.github.io/MBRP/plots/htmls/transitions_group_sleeping_sites_map.html)
 
-## Animations by group
-
-[CampSite](https://roiharel.github.io/MBRP/plots/animations/Campsite.mp4)
-
-[Cliff](https://roiharel.github.io/MBRP/plots/animations/Cliff.mp4)
-
-[Clifford](https://roiharel.github.io/MBRP/plots/animations/Clifford.mp4)
-
-[EagleScout](https://roiharel.github.io/MBRP/plots/animations/Eaglescout.mp4)
-
-[Leikiji](https://roiharel.github.io/MBRP/plots/animations/Leikiji.mp4)
-
-[LizardRock](https://roiharel.github.io/MBRP/plots/animations/LizardRock.mp4)
-
-[LizardRock2](https://roiharel.github.io/MBRP/plots/animations/LizardRock2.mp4)
-
-[Mlimafisi](https://roiharel.github.io/MBRP/plots/animations/Mlimafisi.mp4)
-
-[Pylon](https://roiharel.github.io/MBRP/plots/animations/Pylon.mp4)
-
-[WestMukenya](https://roiharel.github.io/MBRP/plots/animations/WestMukenya.mp4)
-
-[All groups](https://roiharel.github.io/MBRP/plots/animations/MBRP_all_groups_Jan2025.mp4)
 
 ## kml - 1. last week, 2. by group - all time
 
 [Last week](https://roiharel.github.io/MBRP/plots/kmls/last_week.kmz)
 
-[CampSite](https://roiharel.github.io/MBRP/plots/kmls/day/Campsite.kmz)
+[Campsite](https://roiharel.github.io/MBRP/plots/kmls/day/Campsite.kmz)
 
 [Cliff](https://roiharel.github.io/MBRP/plots/kmls/day/Cliff.kmz)
 
 [Clifford](https://roiharel.github.io/MBRP/plots/kmls/day/Clifford.kmz)
 
-[EagleScout](https://roiharel.github.io/MBRP/plots/kmls/day/EagleScout.kmz)
+[Eagle Scout](https://roiharel.github.io/MBRP/plots/kmls/day/EagleScout.kmz)
 
 [Leikiji](https://roiharel.github.io/MBRP/plots/kmls/day/Leikiji.kmz)
 
-[LizardRock](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock.kmz)
+[Lizard Rock](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock.kmz)
 
-[LizardRock2](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock2.kmz)
+[Lizard Rock 2](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock2.kmz)
 
-[Mlimafisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
+[Mlima Fisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
 
 [Pylon](https://roiharel.github.io/MBRP/plots/kmls/day/Pylon.kmz)
 
-[WestMukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
+[West Mukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
+
+## Animations by group
+
+[All groups](https://roiharel.github.io/MBRP/plots/animations/MBRP_all_groups_Jan2025.mp4)
+
 
 ## Weather comparison
 [MRC](https://roiharel.github.io/MBRP/plots/htmls/validate_weather_data.html)
