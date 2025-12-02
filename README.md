@@ -36,28 +36,41 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 
 ## kml - 1. last week, 2. by group - all time
-
 [Last week](https://roiharel.github.io/MBRP/plots/kmls/last_week.kmz)
 
-[Campsite](https://roiharel.github.io/MBRP/plots/kmls/day/Campsite.kmz)
+[TrickyTeal](https://roiharel.github.io/MBRP/plots/kmls/day/TrickyTeal.kmz)
 
-[Cliff](https://roiharel.github.io/MBRP/plots/kmls/day/Cliff.kmz)
+[SneakySilver](https://roiharel.github.io/MBRP/plots/kmls/day/SneakySilver.kmz)
 
-[Clifford](https://roiharel.github.io/MBRP/plots/kmls/day/Clifford.kmz)
+[RubyRunners](https://roiharel.github.io/MBRP/plots/kmls/day/RubyRunners.kmz)
 
-[Eagle Scout](https://roiharel.github.io/MBRP/plots/kmls/day/EagleScout.kmz)
+[Purple](https://roiharel.github.io/MBRP/plots/kmls/day/Purple.kmz)
 
-[Leikiji](https://roiharel.github.io/MBRP/plots/kmls/day/Leikiji.kmz)
+[PhantomWest](https://roiharel.github.io/MBRP/plots/kmls/day/PhantomWest.kmz)
 
-[Lizard Rock](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock.kmz)
+[Periwinkle](https://roiharel.github.io/MBRP/plots/kmls/day/Periwinkle.kmz)
 
-[Lizard Rock 2](https://roiharel.github.io/MBRP/plots/kmls/day/LizardRock2.kmz)
+[Maroon](https://roiharel.github.io/MBRP/plots/kmls/day/Maroon.kmz)
 
-[Mlima Fisi](https://roiharel.github.io/MBRP/plots/kmls/day/Mlimafisi.kmz)
+[Magenta](https://roiharel.github.io/MBRP/plots/kmls/day/Magenta.kmz)
 
-[Pylon](https://roiharel.github.io/MBRP/plots/kmls/day/Pylon.kmz)
+[Lilac](https://roiharel.github.io/MBRP/plots/kmls/day/Lilac.kmz)
 
-[West Mukenya](https://roiharel.github.io/MBRP/plots/kmls/day/WestMukenya.kmz)
+[LapisSplinter](https://roiharel.github.io/MBRP/plots/kmls/day/LapisSplinter.kmz)
+
+[Lapis](https://roiharel.github.io/MBRP/plots/kmls/day/Lapis.kmz)
+
+[Jade](https://roiharel.github.io/MBRP/plots/kmls/day/Jade.kmz)
+
+[Green](https://roiharel.github.io/MBRP/plots/kmls/day/Green.kmz)
+
+[Emerald](https://roiharel.github.io/MBRP/plots/kmls/day/Emerald.kmz)
+
+[Copper](https://roiharel.github.io/MBRP/plots/kmls/day/Copper.kmz)
+
+[Chartreuse](https://roiharel.github.io/MBRP/plots/kmls/day/Chartreuse.kmz)
+
+[Bronze](https://roiharel.github.io/MBRP/plots/kmls/day/Bronze.kmz)
 
 ## Animations by group
 
