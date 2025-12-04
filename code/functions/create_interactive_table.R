@@ -33,20 +33,20 @@ create_interactive_table <- function(daily_summary) {
     filter(date == max(date)) %>%
     dplyr::select(tag_id, animal_id, group_id, sex, age, date, rounded_time_diff, last_batt_value, max_last_days) %>%
     ungroup() %>%
-    rename(status = rounded_time_diff) %>%
+    dplyr::rename(status = rounded_time_diff) %>%
     mutate(max_last_days = signif(max_last_days, 2)) 
   
   
   
   first_days <- daily_summary %>%
-    group_by(tag_id) %>%
-    summarise(first_day = min(date), .groups = "drop")
+    dplyr::group_by(tag_id) %>%
+    dplyr::summarise(first_day = min(date), .groups = "drop")
   # Merge first day into last_rows_per_tag
   last_rows_per_tag <- last_rows_per_tag %>%
-    rename(last_day = date) %>%
+    dplyr::rename(last_day = date) %>%
     left_join(first_days, by = "tag_id")  %>%
     select(tag_id, animal_id, group_id, first_day, last_day, everything()) %>%
-    group_by(animal_id) %>%
+    dplyr::group_by(animal_id) %>%
     slice_max(last_day, with_ties = FALSE) %>%
     ungroup()
     

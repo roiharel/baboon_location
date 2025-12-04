@@ -87,7 +87,7 @@
   )
   saveRDS(color_mapping, "C:\\Users\\meerkat\\Documents\\MBRP\\data\\group_colors.RDS")
   setwd("C:\\Users\\meerkat\\Documents\\MBRP")
-  output_data_folder <- "Z:/baboon/working/data/processed/2025/gps/v1_cleaned"
+  data_folder <- "//10.126.19.90/EAS_shared/baboon/working/data/processed/2025/gps/v1_cleaned"
 }
 ## functions
 # prep data
@@ -95,11 +95,10 @@ source("code\\functions\\prep_gps_movebank.R")
 source("code\\functions\\prep_location_mat.R")
 
 prep_location_mat(
-  input_rds_path = "data/gps_v1.RDS",
-  output_dir = output_data_folder, # "data",
+  input_rds_path = file.path(data_folder, "gps_v1.RDS"),
+  output_dir = file.path(data_folder), # "data",
   utm_zone = 37,
   hemisphere = "north")
-
 
 source("code\\functions\\create_interactive_table.R")
 source("code\\functions\\plot_interactive_map.R")
