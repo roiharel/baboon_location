@@ -36,6 +36,8 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 
 ## kml - 1. last week, 2. by group - all time
+[Decoder-based data](https://roiharel.github.io/MBRP/plots/kmls/all_decoder_data.kmz) #### UNTIL MOVEBANK IS WORKING AGAIN #####
+
 [Last week](https://roiharel.github.io/MBRP/plots/kmls/last_week.kmz)
 
 [TrickyTeal](https://roiharel.github.io/MBRP/plots/kmls/day/TrickyTeal.kmz)
