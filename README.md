@@ -18,6 +18,8 @@ This code processes and visualizes baboon movement data. It downloads GPS data f
 
 ## Monitoring tracking data
 
+[Decoder-based data Field control table](https://roiharel.github.io/MBRP/plots/metadata_table_interactive.html) #### UNTIL MOVEBANK IS WORKING AGAIN #####
+
 [Field control table](https://roiharel.github.io/MBRP/plots/htmls/table_baboon_data_records.html)
 
 [Map - day&night](https://roiharel.github.io/MBRP/plots/htmls/baboon_interactive_map.html)
