@@ -8,6 +8,11 @@
 .RDS
 .csv
 
+# e-obs files - logger
+.zip
+.exe
+.bin
+
 # User-specific files
 .Ruserdata
 
