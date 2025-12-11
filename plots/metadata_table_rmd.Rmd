@@ -1,0 +1,64 @@
+
+---
+title: "Baboon GPS Metadata Table"
+output:
+  html_document:
+    theme: bootstrap
+    highlight: tango
+    self_contained: yes
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(DT)
+library(dplyr)
+```
+
+## <U+0001F412> Baboon GPS Metadata - Interactive Table
+
+**Last Updated:** `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
+
+**Total Records:** `r nrow(last_rows_per_tag_html)`
+
+---
+
+```{r}
+interactive_table <- datatable(
+  last_rows_per_tag_html,
+  escape = FALSE,
+  extensions = c("Buttons", "Responsive"),
+  options = list(
+    paging = TRUE,
+    searching = TRUE,
+    ordering = TRUE,
+    pageLength = 20,
+    lengthMenu = c(10, 20, 50, nrow(last_rows_per_tag_html)),
+    autoWidth = TRUE,
+    dom = "Blfrtip",
+    buttons = list(
+      list(extend = "copy", text = "<U+0001F4CB> Copy"),
+      list(extend = "csv", text = "<U+0001F4E5> CSV", filename = paste0("baboon_metadata_", Sys.Date())),
+      list(extend = "excel", text = "<U+0001F4CA> Excel", filename = paste0("baboon_metadata_", Sys.Date())),
+      list(extend = "pdf", text = "<U+0001F4C4> PDF", filename = paste0("baboon_metadata_", Sys.Date())),
+      list(extend = "print", text = "<U+0001F5A8><U+FE0F> Print"),
+      list(extend = "colvis", text = "<U+0001F441><U+FE0F> Columns")
+    )
+  ),
+  filter = "top",
+  selection = "multiple",
+  class = "cell-border stripe hover"
+)
+
+interactive_table
+```
+
+**Features:**
+- <U+0001F50D> Search/Filter records by any column
+- <U+0001F4E5> Download as CSV, Excel, or PDF
+- <U+0001F4CB> Copy to clipboard
+- <U+0001F5A8><U+FE0F> Print directly
+- <U+0001F441><U+FE0F> Show/hide columns
+- <U+0001F4F1> Responsive design (works on mobile)
+- <U+0001F4BE> Offline compatible
+
