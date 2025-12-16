@@ -7,6 +7,7 @@
 .RDataTmp
 .RDS
 .csv
+.txt
 
 # e-obs files - logger
 .zip
@@ -46,8 +47,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
 docs/
+data/
 
 # translation temp files
 po/*~
