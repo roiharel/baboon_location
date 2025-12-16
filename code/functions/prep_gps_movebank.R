@@ -1,3 +1,6 @@
+# output_data_folder
+output_data_folder <- "//10.126.19.90/EAS_shared/baboon/working/data/processed/2025/gps/v1_cleaned"
+
 
 cols_to_keep <- c( #  "deployment_id",
   "geometry", "azimuth", "speed", "animal_id", "tag_id", 
@@ -97,7 +100,6 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
   return(cleaned_data)
 
 }
-
 
 ## load data and basic cleaning
 baboon_data <- download_data(date_start, date_end)
