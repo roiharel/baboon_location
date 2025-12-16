@@ -40,7 +40,7 @@ cluster_groups <- function(dt, eps_thres = 0.0001, united_eps_thres = 0.001, min
     mutate(cluster = as.character(cluster))
   
   individual_night_locations <- clustered_data %>%
-    select(date, cluster, lat, lon, individual_id, group_id) %>%
+    dplyr::select(date, cluster, lat, lon, individual_id, group_id) %>%
     mutate(cluster = as.character(cluster))
   
   
@@ -57,7 +57,8 @@ cluster_groups <- function(dt, eps_thres = 0.0001, united_eps_thres = 0.001, min
     )
   
   individual_night_locations <- individual_night_locations %>%
-    left_join(cluster_summary %>% select(cluster, cluster_united), by = "cluster")
+    left_join(cluster_summary %>% 
+                dplyr::select(cluster, cluster_united), by = "cluster")
   
   # Optional map generation
   if (plot_map) {

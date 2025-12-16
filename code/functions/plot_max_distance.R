@@ -38,7 +38,8 @@ plot_max_distance <- function(cleaned_data, daily_summary, days_window, color_ma
   # Join the calculated max_last_days to daily_summary
   daily_summary <- daily_summary %>%
     left_join(
-      max_distance_summary %>% select(tag_id, date, max_last_days),
+      max_distance_summary %>% 
+        dplyr::select(tag_id, date, max_last_days),
       by = c("tag_id", "date")
     ) %>% 
     drop_na()

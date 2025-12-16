@@ -45,7 +45,7 @@ create_interactive_table <- function(daily_summary) {
   last_rows_per_tag <- last_rows_per_tag %>%
     dplyr::rename(last_day = date) %>%
     left_join(first_days, by = "tag_id")  %>%
-    select(tag_id, animal_id, group_id, first_day, last_day, everything()) %>%
+    dplyr::select(tag_id, animal_id, group_id, first_day, last_day, everything()) %>%
     dplyr::group_by(animal_id) %>%
     slice_max(last_day, with_ties = FALSE) %>%
     ungroup()

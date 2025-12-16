@@ -64,7 +64,33 @@
   date_end <- now(tz = "CET" )
   speed_threshold <- set_units(5, "m/s")  # Replace "m/s" with the appropriate unit if needed
   mark_old_downloads <- 21 # 21 days
-  possible_mortality <- c(059292, 059293 , 059294, 059295,  059296, 10368, 15484 ,14550 ,14542 ,6898 , 15518) # Replace with actual names
+  possible_mortality <- c(059292, 
+                          059293 , 
+                          059294, 
+                          059295,  
+                          059296, 
+                          059297, 
+                          059298,
+                          059299,
+                          10358,
+                          10368,
+                          15484, 
+                          14550, 
+                          14542, 
+                          6898, 
+                          15518,
+                          14543,
+                          15484,
+                          15522,
+                          15775,
+                          14542,
+                          15481,
+                          11153,
+                          11140,
+                          15779,
+                          10365,
+                          14599,
+                          6897) # Replace with actual names
   # Your color mapping
   color_mapping = c(
     Copper = "#B87333",        # 

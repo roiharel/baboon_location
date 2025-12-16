@@ -29,7 +29,7 @@ plot_data_records <- function(cleaned_data) {
     dplyr::mutate(date = as.Date(timestamp),            
                   time_diff = as.numeric(difftime(timestamp, lag(timestamp), units = "secs"))) %>%
     dplyr::group_by(tag_id, animal_id, group_id, age, sex, date) %>%
-    summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
+    dplyr::summarize(median_time_diff = median(time_diff, na.rm = TRUE), 
               gps_fix_count = n(),
               min_battery = min(eobs_battery_voltage, na.rm = TRUE),   
               .groups = "drop") %>%

@@ -61,10 +61,9 @@ arrange_data <- function(baboon_data, time_interval, speed_threshold) {
       )
   }
   
-  # Apply the rest of the pipeline
   baboon_data <- baboon_data %>%
     mt_filter_per_interval(unit = time_interval) %>%
-    rename(
+    dplyr::rename(
       tag_id = tag_local_identifier,
       animal_id = individual_local_identifier
     )

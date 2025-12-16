@@ -173,61 +173,194 @@ decoder_exe <- "~/MBRP/data/loggers/decoder_v21_win64.exe"
 
 # Process and merge
 decoder_data <- process_decoder_files(bin_folder, decoder_exe, baboon_data)
+decoder_prep <- prepare_decoder_data(decoder_data)
+
 write.csv(decoder_data,'data/decoder_data_dec2025.csv')
 
 
-#####################################################
+system("python C:/Users/meerkat/Documents/MBRP/code/plot_kml_decoder.py")
 
-# Function to merge decoder data with movebank data
-merge_decoder_with_movebank <- function(baboon_data, decoder_data) {
+###################
+
+library(dplyr)
+
+# Read the summary table from CSV
+summary_table <- read.csv('plots/summary_decoder_data.csv')
+
+# Convert tag_id to character for matching
+summary_table$tag_id <- as.character(summary_table$tag_id)
+
+# Update last_day column in last_rows_per_tag_html based on summary_table
+last_rows_per_tag_html <- last_rows_per_tag_html %>%
+  mutate(
+    tag_id_clean = as.character(gsub("<[^>]+>", "", tag_id)),  # Remove HTML tags from tag_id
+    last_day = case_when(
+      tag_id_clean %in% summary_table$tag_id ~ 
+        as.Date(summary_table$last_date[match(tag_id_clean, summary_table$tag_id)]),
+      TRUE ~ last_day
+    )
+  ) %>%
+  select(-tag_id_clean)  # Remove helper column
+
+# Find new tags not in last_rows_per_tag_html
+existing_tags <- gsub("<[^>]+>", "", last_rows_per_tag_html$tag_id) %>% as.character()
+new_tags <- setdiff(summary_table$tag_id, existing_tags)
+
+# Add new tags to table
+if (length(new_tags) > 0) {
   
-  # Prepare decoder data
-  decoder_prep <- prepare_decoder_data(decoder_data)
+  new_rows <- summary_table %>%
+    filter(tag_id %in% new_tags) %>%
+    mutate(
+      tag_id = paste0("<span style=''>", tag_id, "</span>"),
+      sex = NA,
+      age = NA,
+      status = NA,
+      last_batt_value = NA,
+      max_last_days = NA,
+      first_day = as.Date(first_date),
+      last_day = as.Date(last_date)
+    ) %>%
+    select(tag_id, animal_id, group_id, first_day, last_day, sex, age, status, last_batt_value, max_last_days)
   
-  cat("\nMerging data...\n")
-  cat("Movebank data rows:", nrow(baboon_data), "\n")
-  cat("Decoder data rows:", nrow(decoder_prep), "\n")
-  
-  # Convert movebank data (move2) to sf if needed
-  if (inherits(baboon_data, "move2")) {
-    baboon_sf <- sf::st_as_sf(baboon_data)
-  } else if (inherits(baboon_data, "sf")) {
-    baboon_sf <- baboon_data
-  } else {
-    baboon_sf <- sf::st_as_sf(baboon_data)
+  for (i in seq_len(nrow(new_rows))) {
+    clean_tag <- gsub("<[^>]+>", "", new_rows$tag_id[i])
+    cat(paste0("   . ", clean_tag, ": ", new_rows$animal_id[i], " (", new_rows$group_id[i], ")\n"))
   }
   
-  # Create geometry column for decoder data if not present
-  if (!"geometry" %in% names(decoder_prep)) {
-    # Check if we have location columns
-    if ("location-long" %in% names(decoder_prep) && "location-lat" %in% names(decoder_prep)) {
-      decoder_prep <- sf::st_as_sf(decoder_prep, 
-                                   coords = c("location-long", "location-lat"),
-                                   crs = 4326)
-    }
-  }
-  
-  # Get columns from movebank data
-  movebank_cols <- names(baboon_sf)
-  
-  # Add missing columns from movebank to decoder data (filled with NA)
-  for (col in movebank_cols) {
-    if (!col %in% names(decoder_prep)) {
-      decoder_prep[[col]] <- NA
-    }
-  }
-  
-  # Select and reorder columns to match movebank data (in same order)
-  decoder_prep <- decoder_prep[, movebank_cols]
-  
-  # Bind rows
-  combined_data <- rbind(baboon_sf, decoder_prep)
-  
-  cat("Combined data rows:", nrow(combined_data), "\n")
-  cat("Data merged successfully!\n")
-  
-  return(combined_data)
+  last_rows_per_tag_html <- bind_rows(last_rows_per_tag_html, new_rows)
 }
 
+# Sort by tag_id (removing HTML tags for sorting)
+last_rows_per_tag_html <- last_rows_per_tag_html %>%
+  mutate(tag_id_numeric = as.numeric(gsub("<[^>]+>", "", tag_id))) %>%
+  arrange(tag_id_numeric) %>%
+  select(-tag_id_numeric)
 
-baboon_data_complete <- merge_decoder_with_movebank(baboon_data, decoder_data)
+cat("\n??? Metadata table updated successfully\n")
+cat("??? Total records:", nrow(last_rows_per_tag_html), "\n")
+cat("??? New tags added:", length(new_tags), "\n")
+
+
+###################
+
+library(DT)
+library(htmlwidgets)
+
+# Create the interactive table with download options
+interactive_table <- datatable(
+  last_rows_per_tag_html,
+  escape = FALSE,
+  extensions = c('Buttons', 'Responsive'),
+  options = list(
+    paging = TRUE,
+    searching = TRUE,
+    ordering = TRUE,
+    pageLength = 20,
+    lengthMenu = c(nrow(last_rows_per_tag_html)),
+    autoWidth = TRUE,
+    dom = 'Blfrtip',
+    buttons = list(
+      list(
+        extend = 'copy',
+        text = 'Copy',
+        className = 'btn-sm'
+      ),
+      list(
+        extend = 'csv',
+        text = 'CSV',
+        filename = paste0('baboon_metadata_', Sys.Date())
+      ),
+      list(
+        extend = 'excel',
+        text = 'Excel',
+        filename = paste0('baboon_metadata_', Sys.Date())
+      ),
+      list(
+        extend = 'pdf',
+        text = 'PDF',
+        filename = paste0('baboon_metadata_', Sys.Date())
+      ),
+      list(
+        extend = 'print',
+        text = 'Print'
+      ),
+      list(
+        extend = 'colvis',
+        text = 'Columns'
+      )
+    ),
+    language = list(
+      search = "Filter records:",
+      lengthMenu = "_MENU_ rows per page",
+      info = "Showing _START_ to _END_ of _TOTAL_ records"
+    )
+  ),
+  filter = 'top',
+  selection = 'multiple',
+  class = 'cell-border stripe hover'
+)
+
+# Save as HTML file (standalone - works offline)
+saveWidget(
+  interactive_table,
+  file = 'plots/metadata_table_interactive.html',
+  selfcontained = TRUE
+)
+# #####################################################
+# 
+# # Function to merge decoder data with movebank data
+# merge_decoder_with_movebank <- function(baboon_data, decoder_data) {
+#   
+#   # Prepare decoder data
+#   decoder_prep <- prepare_decoder_data(decoder_data)
+#   
+#   cat("\nMerging data...\n")
+#   cat("Movebank data rows:", nrow(baboon_data), "\n")
+#   cat("Decoder data rows:", nrow(decoder_prep), "\n")
+#   
+#   # Convert movebank data (move2) to sf if needed
+#   if (inherits(baboon_data, "move2")) {
+#     baboon_sf <- sf::st_as_sf(baboon_data)
+#   } else if (inherits(baboon_data, "sf")) {
+#     baboon_sf <- baboon_data
+#   } else {
+#     baboon_sf <- sf::st_as_sf(baboon_data)
+#   }
+#   
+#   # Create geometry column for decoder data if not present
+#   if (!"geometry" %in% names(decoder_prep)) {
+#     # Check if we have location columns
+#     if ("location-long" %in% names(decoder_prep) && "location-lat" %in% names(decoder_prep)) {
+#       decoder_prep <- sf::st_as_sf(decoder_prep, 
+#                                    coords = c("location-long", "location-lat"),
+#                                    crs = 4326)
+#     }
+#   }
+#   
+#   # Get columns from movebank data
+#   movebank_cols <- names(baboon_sf)
+#   
+#   # Add missing columns from movebank to decoder data (filled with NA)
+#   for (col in movebank_cols) {
+#     if (!col %in% names(decoder_prep)) {
+#       decoder_prep[[col]] <- NA
+#     }
+#   }
+#   
+#   # Select and reorder columns to match movebank data (in same order)
+#   decoder_prep <- decoder_prep[, movebank_cols]
+#   
+#   # Bind rows
+#   combined_data <- rbind(baboon_sf, decoder_prep)
+#   
+#   cat("Combined data rows:", nrow(combined_data), "\n")
+#   cat("Data merged successfully!\n")
+#   
+#   return(combined_data)
+# }
+# 
+# 
+# baboon_data_complete <- merge_decoder_with_movebank(baboon_data, decoder_data)
+
+
