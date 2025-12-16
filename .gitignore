@@ -5,6 +5,14 @@
 # Session Data files
 .RData
 .RDataTmp
+.RDS
+.csv
+.txt
+
+# e-obs files - logger
+.zip
+.exe
+.bin
 
 # User-specific files
 .Ruserdata
@@ -39,11 +47,14 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# pkgdown site
 docs/
+data/
 
 # translation temp files
 po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+**/baboon_data_batt_plot.html
+
